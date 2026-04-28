@@ -1,0 +1,543 @@
+{
+  "id": "0641a5e1-74dc-4512-81d8-1cf24ef404a8",
+  "name": "New Prefab",
+  "root": {
+    "id": "3a4ece9e-1ee7-4bd4-a908-28d7fdeade3e",
+    "name": "Root",
+    "components": {
+      "transform": {
+        "type": "Transform",
+        "properties": {}
+      }
+    },
+    "children": [
+      {
+        "id": "25aab4ad-9042-42c2-b737-7cfcb554545a",
+        "name": "ground",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                0,
+                -1,
+                -2.220446049250313e-16
+              ],
+              "rotation": [
+                -1.5707963267948963,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "geometry": {
+            "type": "Geometry",
+            "properties": {
+              "geometryType": "plane",
+              "args": [
+                200,
+                200
+              ],
+              "emitClickEvent": false,
+              "clickEventName": ""
+            }
+          },
+          "material": {
+            "type": "Material",
+            "properties": {
+              "materialType": "standard",
+              "color": "#ffffff",
+              "toneMapped": true,
+              "wireframe": false,
+              "transparent": false,
+              "opacity": 1,
+              "sizeAttenuation": true,
+              "offset": [
+                0,
+                0
+              ],
+              "animateOffset": false,
+              "offsetSpeed": [
+                0,
+                0
+              ],
+              "metalness": 0,
+              "roughness": 1,
+              "texture": "/textures/proto32/checkers_01.png",
+              "repeat": true,
+              "repeatCount": [
+                49,
+                70
+              ],
+              "minFilter": "NearestFilter",
+              "magFilter": "NearestFilter"
+            }
+          },
+          "crashcatphysics": {
+            "type": "CrashcatPhysics",
+            "properties": {
+              "type": "fixed",
+              "colliders": "cuboid",
+              "sensor": false
+            }
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "904131ce-ef9f-4332-86e4-9b341c973e44",
+        "name": "sun",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                7,
+                23.5,
+                4.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "directionallight": {
+            "type": "DirectionalLight",
+            "properties": {
+              "intensity": 1.7,
+              "castShadow": true,
+              "targetOffset": [
+                -2,
+                -5,
+                -1.5
+              ],
+              "shadowCameraTop": 38.5,
+              "shadowCameraBottom": -38.5,
+              "shadowCameraLeft": -38.5,
+              "shadowCameraRight": 38.5,
+              "shadowCameraFar": 50
+            }
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "2d2b2ef4-aee1-4882-8bca-48e1ecf842ef",
+        "name": "lights",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {}
+          },
+          "ambientlight": {
+            "type": "AmbientLight",
+            "properties": {}
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "62b93757-2c42-44a2-978c-c37fd9384d5e",
+        "name": "env",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {}
+          },
+          "environment": {
+            "type": "Environment",
+            "properties": {}
+          }
+        },
+        "children": [
+          {
+            "id": "54c71ebb-02cb-4bb7-82e7-5ef3f947ba3f",
+            "name": "New Node",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {}
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "sphere",
+                  "args": [
+                    100,
+                    32,
+                    16
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "materialType": "basic",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/checkers_01.png",
+                  "side": "BackSide",
+                  "repeat": true,
+                  "repeatCount": [
+                    50,
+                    25
+                  ]
+                }
+              }
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "4c5a76c4-1593-47f0-857d-ebe459135a0c",
+        "name": "road circle",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                0,
+                -1,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "geometry": {
+            "type": "Geometry",
+            "properties": {
+              "geometryType": "cylinder",
+              "args": [
+                8,
+                8,
+                0.1,
+                32
+              ],
+              "emitClickEvent": false,
+              "clickEventName": ""
+            }
+          },
+          "material": {
+            "type": "Material",
+            "properties": {
+              "materialType": "standard",
+              "color": "#a8a8a8",
+              "toneMapped": true,
+              "wireframe": false,
+              "transparent": false,
+              "opacity": 1,
+              "sizeAttenuation": true,
+              "offset": [
+                0,
+                0
+              ],
+              "animateOffset": false,
+              "offsetSpeed": [
+                0,
+                0
+              ],
+              "metalness": 0,
+              "roughness": 1
+            }
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "6ff519c1-dbab-461b-8fc4-f5def679ac31",
+        "name": "house",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                -14.385766713879313,
+                0,
+                18.662789610715812
+              ],
+              "rotation": [
+                0,
+                -0.3550781249999996,
+                0
+              ],
+              "scale": [
+                0.9999999999999998,
+                1,
+                0.9999999999999998
+              ]
+            }
+          }
+        },
+        "children": [
+          {
+            "id": "b9d45542-cda6-42ef-a3d9-730866f76970",
+            "name": "New Node",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    0.5,
+                    0
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    9.7,
+                    3,
+                    0.2
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "fixed",
+                  "colliders": "cuboid",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "7f626acd-33cd-4a97-9108-a9f856353fc0",
+            "name": "New Node",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    2,
+                    4
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    10,
+                    0.1,
+                    8
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "fixed",
+                  "colliders": "cuboid",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "e6da1786-19db-4e54-8adb-d1d3c1c74172",
+        "name": "cube",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {}
+          },
+          "geometry": {
+            "type": "Geometry",
+            "properties": {
+              "geometryType": "box",
+              "args": [
+                1,
+                1,
+                1
+              ],
+              "emitClickEvent": false,
+              "clickEventName": ""
+            }
+          },
+          "crashcatphysics": {
+            "type": "CrashcatPhysics",
+            "properties": {
+              "type": "dynamic",
+              "colliders": "cuboid",
+              "sensor": false
+            }
+          },
+          "material": {
+            "type": "Material",
+            "properties": {
+              "materialType": "standard",
+              "color": "#f4c134",
+              "toneMapped": true,
+              "wireframe": false,
+              "transparent": false,
+              "opacity": 1,
+              "sizeAttenuation": true,
+              "offset": [
+                0,
+                0
+              ],
+              "animateOffset": false,
+              "offsetSpeed": [
+                0,
+                0
+              ],
+              "metalness": 0,
+              "roughness": 1,
+              "texture": "/textures/proto32/checkers_01.png"
+            }
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "3534b410-7564-47cb-b1ba-9fd78e510327",
+        "name": "nuketown-ground",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                -10.5,
+                -0.9828102083362394,
+                -1
+              ],
+              "rotation": [
+                -1.5707963267948963,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "geometry": {
+            "type": "Geometry",
+            "properties": {
+              "geometryType": "plane",
+              "args": [
+                200,
+                200
+              ],
+              "emitClickEvent": false,
+              "clickEventName": ""
+            }
+          },
+          "material": {
+            "type": "Material",
+            "properties": {
+              "materialType": "standard",
+              "color": "#ffffff",
+              "toneMapped": true,
+              "wireframe": false,
+              "transparent": false,
+              "opacity": 1,
+              "sizeAttenuation": true,
+              "offset": [
+                0,
+                0
+              ],
+              "animateOffset": false,
+              "offsetSpeed": [
+                0,
+                0
+              ],
+              "metalness": 0,
+              "roughness": 1,
+              "texture": "/textures/nuketown.jpg",
+              "minFilter": "NearestFilter",
+              "magFilter": "NearestFilter"
+            }
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "752ff823-d7d1-418f-b8bc-de0832bd90b1",
+        "name": "walls",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {}
+          }
+        },
+        "children": []
+      }
+    ]
+  }
+}
