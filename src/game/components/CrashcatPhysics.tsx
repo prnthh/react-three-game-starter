@@ -313,18 +313,14 @@ function CrashcatPhysicsView({ properties, children }: ComponentViewProps<Crashc
         sensorExitEventName,
         type,
     }), [
-        angularVelocity?.[0],
-        angularVelocity?.[1],
-        angularVelocity?.[2],
+        angularVelocity,
         capsuleHalfHeight,
         capsuleRadius,
         colliders,
         collisionEnterEventName,
         collisionExitEventName,
         friction,
-        linearVelocity?.[0],
-        linearVelocity?.[1],
-        linearVelocity?.[2],
+        linearVelocity,
         restitution,
         sensor,
         sensorEnterEventName,
@@ -332,7 +328,6 @@ function CrashcatPhysicsView({ properties, children }: ComponentViewProps<Crashc
         type,
     ]);
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         // Rebuild mesh-derived colliders when referenced assets finish loading.
         void revision;

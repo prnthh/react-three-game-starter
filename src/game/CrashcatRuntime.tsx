@@ -18,7 +18,7 @@ import {
     updateWorld,
 } from "crashcat";
 import { debugRenderer } from "crashcat/three";
-import { useEffect, useMemo, useRef, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { gameEvents, PrefabEditorMode, useScene } from "react-three-game";
 
 const SLEEP_TIME_BEFORE_REST = 0.1;
@@ -89,23 +89,23 @@ function emitConfiguredEvent(eventName: string | undefined, sourceNodeId: string
     });
 }
 
+function createDebugState() {
+    const options = debugRenderer.createDefaultOptions();
+    options.bodies.wireframe = true;
+    options.bodies.color = debugRenderer.BodyColorMode.MOTION_TYPE;
+    options.bodies.showAngularVelocity = false;
+    options.bodies.showLinearVelocity = false;
+    options.contacts.enabled = false;
+    options.contactConstraints.enabled = false;
+    return debugRenderer.init(options);
+}
+
 export function CrashcatRuntime({ debug = false, children }: { debug?: boolean; children?: React.ReactNode }) {
     const { mode } = useScene();
     const bodiesRef = useRef(new Map<string, BodyEntry>());
     const bodyByIdRef = useRef(new Map<number, BodyMeta>());
     const apiRef = useRef<CrashcatApi | null>(null);
-    const debugStateRef = useRef<ReturnType<typeof debugRenderer.init> | null>(null);
-
-    if (debug && !debugStateRef.current) {
-        const options = debugRenderer.createDefaultOptions();
-        options.bodies.wireframe = true;
-        options.bodies.color = debugRenderer.BodyColorMode.MOTION_TYPE;
-        options.bodies.showAngularVelocity = false;
-        options.bodies.showLinearVelocity = false;
-        options.contacts.enabled = false;
-        options.contactConstraints.enabled = false;
-        debugStateRef.current = debugRenderer.init(options);
-    }
+    const [debugState] = useState(() => debug ? createDebugState() : null);
 
     const listener = useMemo<Listener>(() => ({
         onContactAdded: (bodyA, bodyB, manifold) => {
@@ -178,12 +178,9 @@ export function CrashcatRuntime({ debug = false, children }: { debug?: boolean; 
             if (crashcatApi === runtimeApi) setCrashcatApi(null);
             bodies.clear();
             bodyById.clear();
-            if (debugStateRef.current) {
-                debugRenderer.dispose(debugStateRef.current);
-                debugStateRef.current = null;
-            }
+            if (debugState) debugRenderer.dispose(debugState);
         };
-    }, []);
+    }, [debugState]);
 
     useFrame((_, delta) => {
         const runtimeApi = apiRef.current;
@@ -192,14 +189,14 @@ export function CrashcatRuntime({ debug = false, children }: { debug?: boolean; 
         const stepDelta = Math.min(delta, MAX_PHYSICS_DELTA);
 
         if (mode === PrefabEditorMode.Play) updateWorld(world, listener, stepDelta);
-        if (debug && debugStateRef.current) debugRenderer.update(debugStateRef.current, world);
+        if (debugState) debugRenderer.update(debugState, world);
     }, -1);
 
     return (
         <>
             {children}
-            {debug && debugStateRef.current
-                ? <primitive object={debugStateRef.current.object3d} />
+            {debugState && mode === PrefabEditorMode.Edit
+                ? <primitive object={debugState.object3d} />
                 : null}
         </>
     );
