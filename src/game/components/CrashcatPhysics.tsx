@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useFrame } from "@react-three/fiber";
+import { useEffect, useMemo, useRef } from "react";
 import {
     BooleanField,
     FieldRenderer,
@@ -8,6 +9,9 @@ import {
     Vector3Field,
     useAssetRuntime,
     useNode,
+    usePrefabStoreApi,
+    useScene,
+    PrefabEditorMode,
     type Component,
     type ComponentViewProps,
     type FieldDefinition,
@@ -21,10 +25,14 @@ import {
     rigidBody,
     sphere,
     triangleMesh,
+    type RigidBody,
+    type World,
 } from "crashcat";
 import { Matrix4, Quaternion, Vector3 } from "three";
 import type { Object3D } from "three";
 import { useCrashcat, type CrashcatApi } from "../CrashcatRuntime";
+
+const MAX_PHYSICS_DELTA = 1 / 30;
 
 type CrashcatPhysicsProperties = {
     type?: "fixed" | "dynamic" | "kinematicPosition" | "kinematicVelocity";
@@ -98,6 +106,9 @@ const scratchVertex = new Vector3();
 const scratchScale = new Vector3();
 const scratchPosition = new Vector3();
 const scratchBoundsSize = new Vector3();
+const worldQuaternion = new Quaternion();
+const parentWorldQuaternion = new Quaternion();
+const localQuaternion = new Quaternion();
 
 type GeometryData = { positions: number[]; indices: number[] };
 
@@ -210,11 +221,68 @@ function toMotionQuality(physics: CrashcatPhysicsProperties) {
     return physics.type === "kinematicPosition" ? MotionQuality.LINEAR_CAST : undefined;
 }
 
+function setObjectWorldTransform(object: Object3D, position: [number, number, number], quaternion: [number, number, number, number]) {
+    if (!object.parent) {
+        object.position.set(position[0], position[1], position[2]);
+        object.quaternion.set(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+        object.updateMatrixWorld(true);
+        return;
+    }
+
+    scratchPosition.set(position[0], position[1], position[2]);
+    object.parent.worldToLocal(scratchPosition);
+    object.position.copy(scratchPosition);
+    object.parent.getWorldQuaternion(parentWorldQuaternion);
+    worldQuaternion.set(quaternion[0], quaternion[1], quaternion[2], quaternion[3]);
+    localQuaternion.copy(parentWorldQuaternion).invert().multiply(worldQuaternion);
+    object.quaternion.copy(localQuaternion);
+    object.updateMatrixWorld(true);
+}
+
+function syncObjectToBody(world: World, body: RigidBody, object: Object3D, position: [number, number, number], quaternion: [number, number, number, number], delta?: number) {
+    object.getWorldPosition(scratchPosition);
+    object.getWorldQuaternion(worldQuaternion);
+    position.splice(0, 3, scratchPosition.x, scratchPosition.y, scratchPosition.z);
+    quaternion.splice(0, 4, worldQuaternion.x, worldQuaternion.y, worldQuaternion.z, worldQuaternion.w);
+
+    if (delta === undefined) {
+        rigidBody.setPosition(world, body, position, false);
+        rigidBody.setQuaternion(world, body, quaternion, false);
+    } else {
+        rigidBody.moveKinematic(body, position, quaternion, delta);
+    }
+}
+
+function bodyTransformChanged(body: RigidBody, lastPosition: [number, number, number] | null, lastQuaternion: [number, number, number, number] | null) {
+    const position = body.position;
+    const quaternion = body.quaternion;
+    return !lastPosition
+        || position[0] !== lastPosition[0]
+        || position[1] !== lastPosition[1]
+        || position[2] !== lastPosition[2]
+        || quaternion[0] !== lastQuaternion?.[0]
+        || quaternion[1] !== lastQuaternion?.[1]
+        || quaternion[2] !== lastQuaternion?.[2]
+        || quaternion[3] !== lastQuaternion?.[3];
+}
+
+function getRegisteredBody(api: CrashcatApi | null, nodeId: string, body: RigidBody | null) {
+    return api && body && api.getBody(nodeId) === body ? body : null;
+}
+
 function CrashcatPhysicsView({ properties, children }: ComponentViewProps<CrashcatPhysicsProperties>) {
     const { nodeId, getObject } = useNode();
+    const scene = useScene();
+    const store = usePrefabStoreApi();
     const api: CrashcatApi | null = useCrashcat();
     const { getAssetRevision } = useAssetRuntime();
     const revision = getAssetRevision();
+    const bodyRef = useRef<RigidBody | null>(null);
+    const motionTypeRef = useRef(MotionType.STATIC);
+    const syncPositionRef = useRef<[number, number, number]>([0, 0, 0]);
+    const syncQuaternionRef = useRef<[number, number, number, number]>([0, 0, 0, 1]);
+    const lastPositionRef = useRef<[number, number, number] | null>(null);
+    const lastQuaternionRef = useRef<[number, number, number, number] | null>(null);
     const {
         angularVelocity,
         capsuleHalfHeight,
@@ -306,7 +374,12 @@ function CrashcatPhysicsView({ properties, children }: ComponentViewProps<Crashc
             rigidBody.setAngularVelocity(api.world, body, physics.angularVelocity);
         }
 
-        api.register(nodeId, body, object, {
+        bodyRef.current = body;
+        motionTypeRef.current = motionType;
+        lastPositionRef.current = null;
+        lastQuaternionRef.current = null;
+
+        api.register(nodeId, body, {
             motionType,
             sensor: Boolean(physics.sensor),
             events: {
@@ -318,6 +391,7 @@ function CrashcatPhysicsView({ properties, children }: ComponentViewProps<Crashc
         });
 
         return () => {
+            bodyRef.current = null;
             api.unregister(nodeId);
         };
     }, [
@@ -327,6 +401,42 @@ function CrashcatPhysicsView({ properties, children }: ComponentViewProps<Crashc
         physics,
         revision,
     ]);
+
+    useEffect(() => {
+        const syncEditBody = () => {
+            const body = getRegisteredBody(api, nodeId, bodyRef.current);
+            const object = getObject();
+            if (!api || !body || !object || scene.mode !== PrefabEditorMode.Edit) return;
+            syncObjectToBody(api.world, body, object, syncPositionRef.current, syncQuaternionRef.current);
+        };
+
+        syncEditBody();
+        return store.subscribe(syncEditBody);
+    }, [api, getObject, nodeId, scene.mode, store]);
+
+    useFrame((_, delta) => {
+        const body = getRegisteredBody(api, nodeId, bodyRef.current);
+        const object = getObject();
+        if (!api || !body || !object || scene.mode !== PrefabEditorMode.Play || motionTypeRef.current !== MotionType.KINEMATIC) return;
+        syncObjectToBody(api.world, body, object, syncPositionRef.current, syncQuaternionRef.current, Math.min(delta, MAX_PHYSICS_DELTA));
+    }, -2);
+
+    useFrame(() => {
+        const body = getRegisteredBody(api, nodeId, bodyRef.current);
+        const object = getObject();
+        if (!api || !body || !object || motionTypeRef.current !== MotionType.DYNAMIC || scene.mode !== PrefabEditorMode.Play) return;
+
+        if (bodyTransformChanged(body, lastPositionRef.current, lastQuaternionRef.current)) {
+            setObjectWorldTransform(object, body.position, body.quaternion);
+            lastPositionRef.current = [body.position[0], body.position[1], body.position[2]];
+            lastQuaternionRef.current = [body.quaternion[0], body.quaternion[1], body.quaternion[2], body.quaternion[3]];
+        }
+
+        if (body.position[1] < -40) {
+            bodyRef.current = null;
+            api.unregister(nodeId);
+        }
+    });
 
     return <>{children}</>;
 }
