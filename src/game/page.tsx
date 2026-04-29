@@ -13,7 +13,6 @@ import MapPicker from "./MapPicker";
 import FirstPersonPlayer, { type FirstPersonPlayerRef } from "./FirstPersonPlayer";
 
 import killbox from "../levels/killbox.json";
-import RenderPipeline from "../shared/PostProcessingEffects";
 
 registerComponent(CrashcatPhysics);
 registerComponent(ElevatorMover);
@@ -32,7 +31,7 @@ export default function Home() {
                         <CrashcatRuntime>
                             <FirstPersonPlayer ref={playerRef} />
                         </CrashcatRuntime>
-                        <RenderPipeline />
+                        {/* <RenderPipeline /> */}
                     </PrefabRoot>
                 </GameCanvas>
             </Controls>

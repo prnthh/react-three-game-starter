@@ -41,6 +41,9 @@ const grabBodyPosition = new Vector3();
 const grabVelocity = new Vector3();
 const grabQuaternion = new Quaternion();
 const cameraWorldQuaternion = new Quaternion();
+const playerBodyPosition: [number, number, number] = [0, 0, 0];
+const playerBodyQuaternion: [number, number, number, number] = [0, 0, 0, 1];
+const playerBodyVelocity: [number, number, number] = [0, 0, 0];
 
 export type FirstPersonPlayerProps = {
     radius?: number;
@@ -120,6 +123,7 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     const characterFilterRef = useRef<Filter | null>(null);
     const playerBodyRef = useRef<RigidBody | null>(null);
     const footstepAudioRefs = useRef<HTMLAudioElement[]>([]);
+    const nextFootstepAudioRef = useRef(0);
 
     useImperativeHandle(ref, () => ({
         getBody: () => playerBodyRef.current,
@@ -183,7 +187,8 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         return () => {
             footstepAudioRefs.current.forEach((audio) => {
                 audio.pause();
-                audio.src = "";
+                audio.removeAttribute("src");
+                audio.load();
             });
             footstepAudioRefs.current = [];
         };
@@ -195,8 +200,10 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
             return;
         }
 
-        const source = clips[Math.floor(Math.random() * clips.length)];
-        const audio = source.cloneNode() as HTMLAudioElement;
+        const audio = clips[nextFootstepAudioRef.current % clips.length];
+        nextFootstepAudioRef.current += 1;
+        audio.pause();
+        audio.currentTime = 0;
         audio.volume = 0.1 + Math.random() * 0.05;
         audio.playbackRate = 0.9 + Math.random() * 0.14;
         void audio.play().catch(() => { });
@@ -382,10 +389,15 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         playerGroup.updateMatrixWorld(true);
 
         if (playerBodyRef.current) {
-            rigidBody.setPosition(world, playerBodyRef.current, [groupPosition.x, groupPosition.y, groupPosition.z], true);
-            rigidBody.setQuaternion(world, playerBodyRef.current, [0, 0, 0, 1], true);
-            planarVelocityVector.set(character.linearVelocity[0], character.linearVelocity[1], character.linearVelocity[2]);
-            rigidBody.setLinearVelocity(world, playerBodyRef.current, [planarVelocityVector.x, planarVelocityVector.y, planarVelocityVector.z]);
+            playerBodyPosition[0] = groupPosition.x;
+            playerBodyPosition[1] = groupPosition.y;
+            playerBodyPosition[2] = groupPosition.z;
+            rigidBody.setPosition(world, playerBodyRef.current, playerBodyPosition, true);
+            rigidBody.setQuaternion(world, playerBodyRef.current, playerBodyQuaternion, true);
+            playerBodyVelocity[0] = character.linearVelocity[0];
+            playerBodyVelocity[1] = character.linearVelocity[1];
+            playerBodyVelocity[2] = character.linearVelocity[2];
+            rigidBody.setLinearVelocity(world, playerBodyRef.current, playerBodyVelocity);
         }
 
     });

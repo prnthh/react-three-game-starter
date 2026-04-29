@@ -57,6 +57,8 @@ type BodyEntry = {
     body: RigidBody;
     object: Object3D;
     meta: BodyMeta;
+    worldPosition: [number, number, number];
+    worldQuaternion: [number, number, number, number];
     lastPosition?: [number, number, number];
     lastQuaternion?: [number, number, number, number];
 };
@@ -71,29 +73,20 @@ export interface CrashcatApi {
     getBody: (nodeId: string) => RigidBody | null;
 }
 
-const CRASHCAT_API_LISTENERS = new Set<() => void>();
-let CRASHCAT_API: CrashcatApi | null = null;
-
-function setCrashcatApi(next: CrashcatApi | null) {
-    CRASHCAT_API = next;
-    CRASHCAT_API_LISTENERS.forEach((listener) => {
-        listener();
-    });
-}
-
-function subscribeCrashcat(listener: () => void) {
-    CRASHCAT_API_LISTENERS.add(listener);
-    return () => {
-        CRASHCAT_API_LISTENERS.delete(listener);
-    };
-}
-
-function getCrashcatSnapshot() {
-    return CRASHCAT_API;
-}
+const crashcatListeners = new Set<() => void>();
+let crashcatApi: CrashcatApi | null = null;
 
 export function useCrashcat(): CrashcatApi | null {
-    return useSyncExternalStore(subscribeCrashcat, getCrashcatSnapshot, getCrashcatSnapshot);
+    return useSyncExternalStore(
+        (listener) => (crashcatListeners.add(listener), () => crashcatListeners.delete(listener)),
+        () => crashcatApi,
+        () => crashcatApi,
+    );
+}
+
+function setCrashcatApi(api: CrashcatApi | null) {
+    crashcatApi = api;
+    crashcatListeners.forEach((listener) => listener());
 }
 
 function emitConfiguredEvent(eventName: string | undefined, sourceNodeId: string, targetNodeId: string | null, collisionNormal?: [number, number, number]) {
@@ -129,8 +122,10 @@ function syncBodyToObject(world: World, entry: BodyEntry, delta?: number) {
     const { body, object } = entry;
     object.getWorldPosition(scratchPosition);
     object.getWorldQuaternion(worldQuaternion);
-    const position: [number, number, number] = [scratchPosition.x, scratchPosition.y, scratchPosition.z];
-    const quaternion: [number, number, number, number] = [worldQuaternion.x, worldQuaternion.y, worldQuaternion.z, worldQuaternion.w];
+    const position = entry.worldPosition;
+    const quaternion = entry.worldQuaternion;
+    position.splice(0, 3, scratchPosition.x, scratchPosition.y, scratchPosition.z);
+    quaternion.splice(0, 4, worldQuaternion.x, worldQuaternion.y, worldQuaternion.z, worldQuaternion.w);
     if (delta === undefined) {
         rigidBody.setPosition(world, body, position, false);
         rigidBody.setQuaternion(world, body, quaternion, false);
@@ -139,11 +134,23 @@ function syncBodyToObject(world: World, entry: BodyEntry, delta?: number) {
     rigidBody.moveKinematic(body, position, quaternion, delta);
 }
 
+function createBodyEntry(body: RigidBody, object: Object3D, meta: BodyMeta): BodyEntry {
+    return { body, object, meta, worldPosition: [0, 0, 0], worldQuaternion: [0, 0, 0, 1] };
+}
+
+function rememberBodyTransform(entry: BodyEntry) {
+    const position = entry.body.position;
+    const quaternion = entry.body.quaternion;
+    entry.lastPosition = [position[0], position[1], position[2]];
+    entry.lastQuaternion = [quaternion[0], quaternion[1], quaternion[2], quaternion[3]];
+}
+
 export function CrashcatRuntime({ debug = false, children }: { debug?: boolean; children?: React.ReactNode }) {
     const { mode } = useScene();
     const bodiesRef = useRef(new Map<string, BodyEntry>());
     const bodyByIdRef = useRef(new Map<number, BodyMeta>());
-    const api = useCrashcat();
+    const expiredNodeIdsRef = useRef<string[]>([]);
+    const apiRef = useRef<CrashcatApi | null>(null);
     const debugStateRef = useRef<ReturnType<typeof debugRenderer.init> | null>(null);
 
     if (debug && !debugStateRef.current) {
@@ -194,28 +201,38 @@ export function CrashcatRuntime({ debug = false, children }: { debug?: boolean; 
         const bodies = bodiesRef.current;
         const bodyById = bodyByIdRef.current;
 
-        setCrashcatApi({
+        const unregister = (nodeId: string) => {
+            const entry = bodies.get(nodeId);
+            if (!entry) return;
+            bodyById.delete(Number(entry.body.id));
+            rigidBody.remove(world, entry.body);
+            bodies.delete(nodeId);
+        };
+
+        const runtimeApi: CrashcatApi = {
             world,
             queryFilter,
             staticObjectLayer,
             movingObjectLayer,
             register: (nodeId, body, object, meta) => {
+                unregister(nodeId);
                 const full: BodyMeta = { nodeId, ...meta };
-                bodies.set(nodeId, { body, object, meta: full });
+                bodies.set(nodeId, createBodyEntry(body, object, full));
                 bodyById.set(Number(body.id), full);
             },
-            unregister: (nodeId) => {
-                const entry = bodies.get(nodeId);
-                if (!entry) return;
-                bodyById.delete(Number(entry.body.id));
-                rigidBody.remove(world, entry.body);
-                bodies.delete(nodeId);
-            },
+            unregister,
             getBody: (nodeId) => bodies.get(nodeId)?.body ?? null,
-        });
+        };
+
+        apiRef.current = runtimeApi;
+        setCrashcatApi(runtimeApi);
 
         return () => {
-            setCrashcatApi(null);
+            for (const entry of bodies.values()) {
+                rigidBody.remove(world, entry.body);
+            }
+            apiRef.current = null;
+            if (crashcatApi === runtimeApi) setCrashcatApi(null);
             bodies.clear();
             bodyById.clear();
             if (debugStateRef.current) {
@@ -226,8 +243,9 @@ export function CrashcatRuntime({ debug = false, children }: { debug?: boolean; 
     }, []);
 
     useFrame((_, delta) => {
-        if (!api) return;
-        const { world } = api;
+        const runtimeApi = apiRef.current;
+        if (!runtimeApi) return;
+        const { world } = runtimeApi;
         const stepDelta = Math.min(delta, MAX_PHYSICS_DELTA);
 
         if (mode === PrefabEditorMode.Edit) {
@@ -241,31 +259,30 @@ export function CrashcatRuntime({ debug = false, children }: { debug?: boolean; 
             }
             updateWorld(world, listener, stepDelta);
 
-            const expiredNodeIds: string[] = [];
+            const expiredNodeIds = expiredNodeIdsRef.current;
+            expiredNodeIds.length = 0;
             for (const [nodeId, entry] of bodiesRef.current) {
                 if (entry.meta.motionType !== MotionType.DYNAMIC) continue;
                 const { body, object } = entry;
                 const position = body.position;
                 const quaternion = body.quaternion;
-                const positionChanged = !entry.lastPosition
+                const changed = !entry.lastPosition
                     || entry.lastPosition[0] !== position[0]
                     || entry.lastPosition[1] !== position[1]
-                    || entry.lastPosition[2] !== position[2];
-                const quaternionChanged = !entry.lastQuaternion
-                    || entry.lastQuaternion[0] !== quaternion[0]
-                    || entry.lastQuaternion[1] !== quaternion[1]
-                    || entry.lastQuaternion[2] !== quaternion[2]
-                    || entry.lastQuaternion[3] !== quaternion[3];
+                    || entry.lastPosition[2] !== position[2]
+                    || entry.lastQuaternion?.[0] !== quaternion[0]
+                    || entry.lastQuaternion?.[1] !== quaternion[1]
+                    || entry.lastQuaternion?.[2] !== quaternion[2]
+                    || entry.lastQuaternion?.[3] !== quaternion[3];
 
-                if (positionChanged || quaternionChanged) {
+                if (changed) {
                     setObjectWorldTransform(object, position, quaternion);
-                    entry.lastPosition = [position[0], position[1], position[2]];
-                    entry.lastQuaternion = [quaternion[0], quaternion[1], quaternion[2], quaternion[3]];
+                    rememberBodyTransform(entry);
                 }
 
                 if (position[1] < -40) expiredNodeIds.push(nodeId);
             }
-            expiredNodeIds.forEach(api.unregister);
+            expiredNodeIds.forEach(runtimeApi.unregister);
         }
 
         if (debug && debugStateRef.current) debugRenderer.update(debugStateRef.current, world);
