@@ -7,15 +7,13 @@ import type { Prefab, PrefabEditorRef } from "react-three-game";
 import Controls, { useControls } from "../../controls/ControlsProvider";
 
 import ElevatorMover from "../components/ElevatorMover";
-import OrbMover from "../components/OrbMover";
 
 import FirstPersonPlayer, { type FirstPersonPlayerRef } from "../FirstPersonPlayer";
 
-import initialWorld from "../../levels/killbox.json";
+import initialWorld from "../../levels/train.json";
 
 registerComponent(CrashcatPhysicsComponent);
 registerComponent(ElevatorMover);
-registerComponent(OrbMover);
 
 function ControlModeSync() {
     const scene = useScene();

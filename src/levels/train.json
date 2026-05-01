@@ -1,0 +1,1419 @@
+{
+  "id": "0f610a4b-f1b9-4151-896c-880afdea58e6",
+  "name": "New Prefab",
+  "root": {
+    "id": "219507c8-0162-4397-a6b2-b490c7e176ad",
+    "name": "Root",
+    "components": {
+      "transform": {
+        "type": "Transform",
+        "properties": {}
+      }
+    },
+    "children": [
+      {
+        "id": "3c173004-99bd-4b12-b5a3-d25056b90ddc",
+        "name": "floor",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                0,
+                -2,
+                0
+              ],
+              "rotation": [
+                -1.5707963267948963,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "geometry": {
+            "type": "Geometry",
+            "properties": {
+              "geometryType": "plane",
+              "args": [
+                50,
+                1000
+              ],
+              "emitClickEvent": false,
+              "clickEventName": ""
+            }
+          },
+          "crashcatphysics": {
+            "type": "CrashcatPhysics",
+            "properties": {
+              "type": "fixed",
+              "colliders": "cuboid",
+              "sensor": false
+            }
+          },
+          "material": {
+            "type": "Material",
+            "properties": {
+              "attach": "material",
+              "materialType": "standard",
+              "color": "#ffffff",
+              "toneMapped": true,
+              "wireframe": false,
+              "transparent": false,
+              "opacity": 1,
+              "sizeAttenuation": true,
+              "offset": [
+                0,
+                0
+              ],
+              "animateOffset": false,
+              "offsetSpeed": [
+                0,
+                0
+              ],
+              "metalness": 0,
+              "roughness": 1,
+              "texture": "/textures/proto32/checkers_01.png",
+              "repeat": true,
+              "repeatCount": [
+                50,
+                100
+              ]
+            }
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "1ff147ab-623e-414a-b1f2-87618721b239",
+        "name": "platform",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                0,
+                -1,
+                0
+              ],
+              "rotation": [
+                -1.5707963267948963,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "geometry": {
+            "type": "Geometry",
+            "properties": {
+              "geometryType": "box",
+              "args": [
+                9,
+                50,
+                2
+              ],
+              "emitClickEvent": false,
+              "clickEventName": ""
+            }
+          },
+          "crashcatphysics": {
+            "type": "CrashcatPhysics",
+            "properties": {
+              "type": "fixed",
+              "colliders": "cuboid",
+              "sensor": false
+            }
+          },
+          "material": {
+            "type": "Material",
+            "properties": {
+              "attach": "material",
+              "materialType": "standard",
+              "color": "#ffffff",
+              "toneMapped": true,
+              "wireframe": false,
+              "transparent": false,
+              "opacity": 1,
+              "sizeAttenuation": true,
+              "offset": [
+                0,
+                0
+              ],
+              "animateOffset": false,
+              "offsetSpeed": [
+                0,
+                0
+              ],
+              "metalness": 0,
+              "roughness": 1,
+              "texture": "/textures/proto32/checkers_01.png",
+              "repeat": true,
+              "repeatCount": [
+                50,
+                100
+              ]
+            }
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "b7439cd9-d00b-428d-8dc0-85d910875671",
+        "name": "light",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {}
+          },
+          "ambientlight": {
+            "type": "AmbientLight",
+            "properties": {
+              "intensity": 1.3
+            }
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "76e416d4-e713-467a-864e-34f7627f66cb",
+        "name": "elevator",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                0,
+                0.11851562500000001,
+                -22.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "geometry": {
+            "type": "Geometry",
+            "properties": {
+              "geometryType": "box",
+              "args": [
+                3,
+                0.1,
+                4
+              ],
+              "emitClickEvent": false,
+              "clickEventName": ""
+            }
+          },
+          "material": {
+            "type": "Material",
+            "properties": {
+              "attach": "material",
+              "materialType": "standard",
+              "color": "#ffffff",
+              "toneMapped": true,
+              "wireframe": false,
+              "transparent": false,
+              "opacity": 1,
+              "sizeAttenuation": true,
+              "offset": [
+                0,
+                0
+              ],
+              "animateOffset": false,
+              "offsetSpeed": [
+                0,
+                0
+              ],
+              "metalness": 0,
+              "roughness": 1,
+              "texture": "/textures/proto32/greybox_light_grid.png"
+            }
+          },
+          "elevatormover": {
+            "type": "ElevatorMover",
+            "properties": {
+              "contactEventName": "elevator:contact",
+              "triggerEntityId": "",
+              "travelDistance": 6,
+              "moveSpeed": 1.6,
+              "startDelay": 0,
+              "returnDelay": 1,
+              "returnDuration": 2.5
+            }
+          },
+          "crashcatphysics": {
+            "type": "CrashcatPhysics",
+            "properties": {
+              "type": "kinematicPosition",
+              "colliders": "cuboid",
+              "sensor": false,
+              "collisionEnterEventName": "elevator:contact"
+            }
+          }
+        },
+        "children": []
+      },
+      {
+        "id": "b2193878-4d20-46c3-800c-4c9bc7a781ff",
+        "name": "train",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                7,
+                0.11851562500000001,
+                0
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "geometry": {
+            "type": "Geometry",
+            "properties": {
+              "geometryType": "box",
+              "args": [
+                4,
+                0.1,
+                15
+              ],
+              "emitClickEvent": false,
+              "clickEventName": ""
+            }
+          },
+          "material": {
+            "type": "Material",
+            "properties": {
+              "attach": "material",
+              "materialType": "standard",
+              "color": "#ffffff",
+              "toneMapped": true,
+              "wireframe": false,
+              "transparent": false,
+              "opacity": 1,
+              "sizeAttenuation": true,
+              "offset": [
+                0,
+                0
+              ],
+              "animateOffset": false,
+              "offsetSpeed": [
+                0,
+                0
+              ],
+              "metalness": 0,
+              "roughness": 1,
+              "texture": "/textures/proto32/greybox_light_grid.png"
+            }
+          },
+          "crashcatphysics": {
+            "type": "CrashcatPhysics",
+            "properties": {
+              "type": "kinematicPosition",
+              "colliders": "trimesh",
+              "sensor": false,
+              "collisionEnterEventName": "train:contact"
+            }
+          }
+        },
+        "children": [
+          {
+            "id": "7521e7c1-8e71-4d8b-a63d-3e399c48d5ba",
+            "name": "New Node",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    1.3814843749999999,
+                    7
+                  ],
+                  "rotation": [
+                    0.7853981633974483,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    1.5,
+                    0.6,
+                    0.1
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#b5b5b5",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/greybox_light_grid.png"
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "73ded9ea-fada-4ae7-82c0-7151112c268a",
+            "name": "New Node Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    0.5,
+                    -7.5
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    4,
+                    1,
+                    0.1
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/greybox_light_grid.png"
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "4f5957a5-0480-4dc0-8653-ed9d1d1e0d2e",
+            "name": "New Node Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    0.5,
+                    7.5
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    4,
+                    1,
+                    0.1
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/greybox_light_grid.png"
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "214efa8a-a304-4d2f-b436-b854964ed89c",
+            "name": "New Node Copy Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    2.881484375,
+                    7.5
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    4,
+                    1,
+                    0.1
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/greybox_light_grid.png"
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "b4b40459-dee6-4f8f-8c6d-e87db4f85313",
+            "name": "New Node Copy Copy Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    3.129282657212326,
+                    -7.5
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    4,
+                    0.5,
+                    0.1
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/greybox_light_grid.png"
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "d0530288-d95b-4e25-94b4-1f51cb995d2a",
+            "name": "New Node Copy Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    3.381484375,
+                    0
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    4,
+                    0.1,
+                    15
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/greybox_light_grid.png"
+                }
+              }
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "4ab30cb1-8bb9-40f8-9a4e-18e9f97a425e",
+        "name": "walls",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {}
+          }
+        },
+        "children": [
+          {
+            "id": "13884e93-10ea-40ac-9008-3cf1c7577e5a",
+            "name": "New Node",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    9.5,
+                    2,
+                    0
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    0.2,
+                    8,
+                    50
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/checkers_01.png"
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "fixed",
+                  "colliders": "cuboid",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "e89b1926-61b2-447c-b7f7-5f3414ca684b",
+            "name": "New Node Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    -10.5,
+                    2,
+                    0
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    0.2,
+                    8,
+                    50
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/checkers_01.png"
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "fixed",
+                  "colliders": "cuboid",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "1c8fb354-0391-463d-bf76-f99a07630359",
+            "name": "New Node Copy Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    2,
+                    -25
+                  ],
+                  "rotation": [
+                    0,
+                    -1.5707963267948966,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    0.2,
+                    8,
+                    9
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/checkers_01.png"
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "fixed",
+                  "colliders": "cuboid",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "b591f77b-507a-442c-b5bb-cfc8989a26d0",
+            "name": "New Node Copy Copy Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    2,
+                    25
+                  ],
+                  "rotation": [
+                    0,
+                    -1.5707963267948966,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    0.2,
+                    8,
+                    9
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/checkers_01.png"
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "fixed",
+                  "colliders": "cuboid",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "375ba871-2cc2-4efe-a2e2-079afe29d209",
+            "name": "New Node Copy Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    -0.5,
+                    6,
+                    2.5
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    20,
+                    0.2,
+                    45
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/checkers_01.png"
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "fixed",
+                  "colliders": "cuboid",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "1a48f335-ae7f-45bc-b0c9-29f24d586747",
+            "name": "New Node Copy Copy Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    2,
+                    3,
+                    -22.5
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    0.2,
+                    6,
+                    5
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/checkers_01.png"
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "fixed",
+                  "colliders": "cuboid",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "6d6e8384-562d-4301-bd28-bb9475c5b3bb",
+            "name": "New Node Copy Copy Copy Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    -2,
+                    3,
+                    -22.5
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    0.2,
+                    6,
+                    5
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/proto32/checkers_01.png"
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "fixed",
+                  "colliders": "cuboid",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "c6054a64-d9ff-4517-b5e6-65e5e920b632",
+        "name": "New Node",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {}
+          }
+        },
+        "children": [
+          {
+            "id": "5587edff-5022-43d2-9138-ad0bfd1ed8cc",
+            "name": "New Node",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    5,
+                    -7
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "spotlight": {
+                "type": "SpotLight",
+                "properties": {
+                  "intensity": 100,
+                  "penumbra": 0.7,
+                  "distance": 70,
+                  "angle": 1.15
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "887b09fe-de8e-458a-ac76-86ee4bb46ad5",
+            "name": "New Node Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    5,
+                    14
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "spotlight": {
+                "type": "SpotLight",
+                "properties": {
+                  "intensity": 100,
+                  "penumbra": 0.7,
+                  "distance": 70,
+                  "angle": 1.15
+                }
+              }
+            },
+            "children": []
+          }
+        ]
+      },
+      {
+        "id": "76dd847f-358f-4d74-9111-19345211f7fc",
+        "name": "New Node",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                0,
+                0.5,
+                19.5
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          },
+          "geometry": {
+            "type": "Geometry",
+            "properties": {
+              "geometryType": "box",
+              "args": [
+                1,
+                1,
+                1
+              ],
+              "emitClickEvent": false,
+              "clickEventName": ""
+            }
+          },
+          "material": {
+            "type": "Material",
+            "properties": {
+              "attach": "material",
+              "materialType": "standard",
+              "color": "#ff8e52",
+              "toneMapped": true,
+              "wireframe": false,
+              "transparent": false,
+              "opacity": 1,
+              "sizeAttenuation": true,
+              "offset": [
+                0,
+                0
+              ],
+              "animateOffset": false,
+              "offsetSpeed": [
+                0,
+                0
+              ],
+              "metalness": 0,
+              "roughness": 1,
+              "texture": "/textures/proto32/greybox_light_grid.png"
+            }
+          },
+          "crashcatphysics": {
+            "type": "CrashcatPhysics",
+            "properties": {
+              "type": "dynamic",
+              "colliders": "cuboid",
+              "sensor": false
+            }
+          }
+        },
+        "children": []
+      }
+    ]
+  }
+}

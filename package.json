@@ -15,7 +15,7 @@
 		"crashcat": "0.0.4",
 		"react": "19.2.5",
 		"react-dom": "19.2.5",
-		"react-three-game": "0.0.104",
+		"react-three-game": "0.0.105",
 		"three": "0.184.0",
 		"zustand": "5.0.12"
 	},
