@@ -874,110 +874,108 @@
 					"elevatormover": {
 						"type": "ElevatorMover",
 						"properties": {
-							"platformNodeId": "b31bf4de-524b-494a-bc18-a0812504fbbc",
-							"sensorNodeId": "72964d32-2a5c-4395-a6e8-5c72d299c7a2",
+							"contactEventName": "elevator:contact",
 							"triggerEntityId": "player",
 							"travelDistance": 26.5,
 							"moveSpeed": 5,
-							"returnDelay": 1,
+							"startDelay": 1,
+							"returnDelay": 2,
 							"returnDuration": 2.5
+						}
+					},
+					"geometry": {
+						"type": "Geometry",
+						"properties": {
+							"geometryType": "box",
+							"args": [2, 0.1, 2],
+							"castShadow": false
+						}
+					},
+					"material": {
+						"type": "Material",
+						"properties": {
+							"materialType": "standard",
+							"color": "#ffffff",
+							"toneMapped": true,
+							"wireframe": false,
+							"transparent": true,
+							"opacity": 1,
+							"metalness": 0,
+							"roughness": 1,
+							"texture": "/textures/proto32/checkers_02.png",
+							"repeat": true,
+							"repeatCount": [1.5, 1.5]
+						}
+					},
+					"crashcatPhysics": {
+						"type": "CrashcatPhysics",
+						"properties": {
+							"type": "kinematicVelocity",
+							"colliders": "hull",
+							"collisionEnterEventName": "elevator:contact"
 						}
 					}
 				},
-				"children": [
-					{
-						"id": "b31bf4de-524b-494a-bc18-a0812504fbbc",
-						"name": "rigidbody",
-						"components": {
-							"transform": {
-								"type": "Transform",
-								"properties": {
-									"position": [0, 0, 0],
-									"rotation": [0, 0, 0],
-									"scale": [1, 1, 1]
-								}
-							},
-							"geometry": {
-								"type": "Geometry",
-								"properties": {
-									"geometryType": "box",
-									"args": [2, 0.1, 2],
-									"castShadow": false
-								}
-							},
-							"material": {
-								"type": "Material",
-								"properties": {
-									"materialType": "standard",
-									"color": "#ffffff",
-									"toneMapped": true,
-									"wireframe": false,
-									"transparent": true,
-									"opacity": 1,
-									"metalness": 0,
-									"roughness": 1,
-									"texture": "/textures/image1.png",
-									"repeat": true,
-									"repeatCount": [1.2, 3]
-								}
-							},
-							"crashcatPhysics": {
-								"type": "CrashcatPhysics",
-								"properties": {
-									"type": "kinematicVelocity",
-									"colliders": "hull"
-								}
-							}
-						},
-						"children": []
+				"children": []
+			},
+			{
+				"id": "5807095a-5f51-4cba-8089-98cf304437fc",
+				"name": "elevator Copy",
+				"components": {
+					"transform": {
+						"type": "Transform",
+						"properties": {
+							"position": [3.5, 0, -14],
+							"rotation": [0, 0, 0],
+							"scale": [1, 1, 1]
+						}
 					},
-					{
-						"id": "72964d32-2a5c-4395-a6e8-5c72d299c7a2",
-						"name": "sensor",
-						"components": {
-							"transform": {
-								"type": "Transform",
-								"properties": {
-									"position": [0, 0.5, 0],
-									"rotation": [0, 0, 0],
-									"scale": [1, 1, 1]
-								}
-							},
-							"geometry": {
-								"type": "Geometry",
-								"properties": {
-									"geometryType": "box",
-									"args": [2, 0.5, 2],
-									"castShadow": false,
-									"receiveShadow": false
-								}
-							},
-							"crashcatPhysics": {
-								"type": "CrashcatPhysics",
-								"properties": {
-									"type": "fixed",
-									"colliders": "hull",
-									"sensor": true,
-									"sensorEnterEventName": "sensor:enter"
-								}
-							},
-							"material": {
-								"type": "Material",
-								"properties": {
-									"materialType": "basic",
-									"color": "#ffffff",
-									"toneMapped": true,
-									"wireframe": false,
-									"transparent": true,
-									"opacity": 0,
-									"metalness": 0,
-									"roughness": 1
-								}
-							}
-						},
-						"children": []
+					"elevatormover": {
+						"type": "ElevatorMover",
+						"properties": {
+							"contactEventName": "elevator:contact",
+							"triggerEntityId": "player",
+							"travelDistance": 43,
+							"moveSpeed": 5,
+							"startDelay": 1,
+							"returnDelay": 2,
+							"returnDuration": 2.5
+						}
+					},
+					"geometry": {
+						"type": "Geometry",
+						"properties": {
+							"geometryType": "box",
+							"args": [2, 0.1, 2],
+							"castShadow": false
+						}
+					},
+					"material": {
+						"type": "Material",
+						"properties": {
+							"materialType": "standard",
+							"color": "#ffffff",
+							"toneMapped": true,
+							"wireframe": false,
+							"transparent": true,
+							"opacity": 1,
+							"metalness": 0,
+							"roughness": 1,
+							"texture": "/textures/proto32/checkers_02.png",
+							"repeat": true,
+							"repeatCount": [1.5, 1.5]
+						}
+					},
+					"crashcatPhysics": {
+						"type": "CrashcatPhysics",
+						"properties": {
+							"type": "kinematicVelocity",
+							"colliders": "hull",
+							"collisionEnterEventName": "elevator:contact"
+						}
 					}
-				]
+				},
+				"children": []
 			},
 			{
 				"id": "39bd08d8-d555-4a13-b851-6ab8bcd0ce4a",
