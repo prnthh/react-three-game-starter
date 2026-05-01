@@ -184,7 +184,6 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     const cameraSwayRef = useRef<Group>(null);
     const planarVelocityRef = useRef(new Vector3());
     const footstepTimerRef = useRef(0);
-    const wasMovingRef = useRef(false);
     const characterRef = useRef<ReturnType<typeof kcc.create> | null>(null);
     const updateSettingsRef = useRef(kcc.createDefaultUpdateSettings());
     const cameraYawRef = useRef(0);
@@ -206,7 +205,6 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         characterFilterRef.current = null;
         planarVelocityRef.current.set(0, 0, 0);
         footstepTimerRef.current = 0;
-        wasMovingRef.current = false;
         jumpQueuedRef.current = false;
         jumpPressedLastFrameRef.current = false;
         cameraYawRef.current = 0;
@@ -484,17 +482,10 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         const moving = grounded && desiredPlanarSpeed.lengthSq() > 0 && speed > footstepMinSpeed;
 
         if (!moving) {
-            wasMovingRef.current = false;
             if (footstepTimerRef.current !== 0) {
                 footstepTimerRef.current = 0;
             }
         } else {
-            if (!wasMovingRef.current) {
-                wasMovingRef.current = true;
-                footstepTimerRef.current = footstepInterval + Math.random() * footstepRandomDelay;
-                return;
-            }
-
             footstepTimerRef.current -= delta;
 
             if (footstepTimerRef.current <= 0) {
