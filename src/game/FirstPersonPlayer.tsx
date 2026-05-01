@@ -18,7 +18,7 @@ import {
     type World,
 } from "crashcat";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
-import { gameEvents, PrefabEditorMode, useScene } from "react-three-game";
+import { gameEvents, PrefabEditorMode, soundManager, useScene } from "react-three-game";
 import { useCrashcat } from "react-three-game/plugins/crashcat";
 import { useControls } from "../controls/ControlsProvider";
 import useInputStore from "../controls/InputStore";
@@ -184,6 +184,7 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     const cameraSwayRef = useRef<Group>(null);
     const planarVelocityRef = useRef(new Vector3());
     const footstepTimerRef = useRef(0);
+    const wasMovingRef = useRef(false);
     const characterRef = useRef<ReturnType<typeof kcc.create> | null>(null);
     const updateSettingsRef = useRef(kcc.createDefaultUpdateSettings());
     const cameraYawRef = useRef(0);
@@ -194,7 +195,6 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     const playerBodyRef = useRef<RigidBody | null>(null);
     const lastSupportBodyIdRef = useRef<number | null>(null);
     const lastSupportQuaternionRef = useRef(new Quaternion());
-    const footstepAudioRefs = useRef<HTMLAudioElement[]>([]);
     const nextFootstepAudioRef = useRef(0);
 
     useImperativeHandle(ref, () => ({
@@ -206,6 +206,7 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         characterFilterRef.current = null;
         planarVelocityRef.current.set(0, 0, 0);
         footstepTimerRef.current = 0;
+        wasMovingRef.current = false;
         jumpQueuedRef.current = false;
         jumpPressedLastFrameRef.current = false;
         cameraYawRef.current = 0;
@@ -252,35 +253,19 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     }, [mode]);
 
     useEffect(() => {
-        footstepAudioRefs.current = FOOTSTEP_CLIPS.map((clip) => {
-            const audio = new Audio(clip);
-            audio.preload = "auto";
-            return audio;
-        });
-
-        return () => {
-            footstepAudioRefs.current.forEach((audio) => {
-                audio.pause();
-                audio.removeAttribute("src");
-                audio.load();
-            });
-            footstepAudioRefs.current = [];
-        };
+        void Promise.all(
+            FOOTSTEP_CLIPS.map((clip) => soundManager.load(clip, clip).catch(() => { })),
+        );
     }, []);
 
     const playFootstepSound = () => {
-        const clips = footstepAudioRefs.current;
-        if (clips.length === 0) {
-            return;
-        }
-
-        const audio = clips[nextFootstepAudioRef.current % clips.length];
+        const clip = FOOTSTEP_CLIPS[nextFootstepAudioRef.current % FOOTSTEP_CLIPS.length];
         nextFootstepAudioRef.current += 1;
-        audio.pause();
-        audio.currentTime = 0;
-        audio.volume = 0.1 + Math.random() * 0.05;
-        audio.playbackRate = 0.9 + Math.random() * 0.14;
-        void audio.play().catch(() => { });
+
+        soundManager.playSync(clip, {
+            volume: 0.1 + Math.random() * 0.05,
+            playbackRate: 0.9 + Math.random() * 0.14,
+        });
     };
 
     useEffect(() => {
@@ -499,10 +484,17 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         const moving = grounded && desiredPlanarSpeed.lengthSq() > 0 && speed > footstepMinSpeed;
 
         if (!moving) {
+            wasMovingRef.current = false;
             if (footstepTimerRef.current !== 0) {
                 footstepTimerRef.current = 0;
             }
         } else {
+            if (!wasMovingRef.current) {
+                wasMovingRef.current = true;
+                footstepTimerRef.current = footstepInterval + Math.random() * footstepRandomDelay;
+                return;
+            }
+
             footstepTimerRef.current -= delta;
 
             if (footstepTimerRef.current <= 0) {
