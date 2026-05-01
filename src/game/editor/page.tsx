@@ -2,11 +2,10 @@
 
 import { useEffect, useRef } from "react";
 import { PrefabEditor, PrefabEditorMode, registerComponent, useScene } from "react-three-game";
+import { CrashcatPhysicsComponent, CrashcatRuntime } from "react-three-game/plugins/crashcat";
 import type { Prefab, PrefabEditorRef } from "react-three-game";
 import Controls, { useControls } from "../../controls/ControlsProvider";
 
-import { CrashcatRuntime } from "../CrashcatRuntime";
-import CrashcatPhysics from "../components/CrashcatPhysics";
 import ElevatorMover from "../components/ElevatorMover";
 import OrbMover from "../components/OrbMover";
 
@@ -14,7 +13,7 @@ import FirstPersonPlayer, { type FirstPersonPlayerRef } from "../FirstPersonPlay
 
 import initialWorld from "../../levels/killbox.json";
 
-registerComponent(CrashcatPhysics);
+registerComponent(CrashcatPhysicsComponent);
 registerComponent(ElevatorMover);
 registerComponent(OrbMover);
 

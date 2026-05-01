@@ -2,10 +2,9 @@
 
 import { useRef, useState } from "react";
 import { GameCanvas, PrefabRoot, registerComponent, type Prefab } from "react-three-game";
+import { CrashcatPhysicsComponent, CrashcatRuntime } from "react-three-game/plugins/crashcat";
 import Controls from "../controls/ControlsProvider";
 
-import { CrashcatRuntime } from "./CrashcatRuntime";
-import CrashcatPhysics from "./components/CrashcatPhysics";
 import ElevatorMover from "./components/ElevatorMover";
 import OrbMover from "./components/OrbMover";
 import MapPicker from "./MapPicker";
@@ -14,7 +13,7 @@ import FirstPersonPlayer, { type FirstPersonPlayerRef } from "./FirstPersonPlaye
 
 import killbox from "../levels/killbox.json";
 
-registerComponent(CrashcatPhysics);
+registerComponent(CrashcatPhysicsComponent);
 registerComponent(ElevatorMover);
 registerComponent(OrbMover);
 

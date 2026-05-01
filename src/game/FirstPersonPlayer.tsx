@@ -5,7 +5,7 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { capsule, filter, kcc, rigidBody, MotionType, type Filter, type RigidBody, type World } from "crashcat";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { gameEvents, PrefabEditorMode, useScene } from "react-three-game";
-import { useCrashcat } from "./CrashcatRuntime";
+import { useCrashcat } from "react-three-game/plugins/crashcat";
 import { useControls } from "../controls/ControlsProvider";
 import useInputStore from "../controls/InputStore";
 import { MathUtils, Quaternion, Raycaster, Vector2, Vector3 } from "three";
