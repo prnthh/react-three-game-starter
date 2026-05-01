@@ -23,7 +23,6 @@ const DEFAULT_LOOK_AT_TWEEN_SPEED = 7;
 const DEFAULT_LOOK_AT_REST_TWEEN_SPEED = 5;
 const LOOK_AT_TARGET_HEIGHT_OFFSET = 0.5;
 const LOOK_AT_SNAP_EPSILON = 0.0001;
-const REST_POSE_EPSILON = 0.001;
 
 type PlayerTarget = Object3D<Object3DEventMap> | {
     getBody: () => {
@@ -301,10 +300,6 @@ function useLookAtTarget(
             }
         } else {
             desiredQuaternion.copy(restQuaternionRef.current);
-
-            if (previousQuaternion.angleTo(desiredQuaternion) <= REST_POSE_EPSILON) {
-                return;
-            }
         }
 
         const alpha = 1 - Math.exp(-Math.max(0, speed) * delta);
