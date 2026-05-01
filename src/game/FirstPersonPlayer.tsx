@@ -2,7 +2,21 @@
 
 import { PerspectiveCamera, useGLTF } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { capsule, filter, kcc, rigidBody, MotionType, type Filter, type RigidBody, type World } from "crashcat";
+import {
+    CastRayStatus,
+    capsule,
+    castRay,
+    createClosestCastRayCollector,
+    createDefaultCastRaySettings,
+    filter,
+    kcc,
+    rigidBody,
+    MotionQuality,
+    MotionType,
+    type Filter,
+    type RigidBody,
+    type World,
+} from "crashcat";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
 import { gameEvents, PrefabEditorMode, useScene } from "react-three-game";
 import { useCrashcat } from "react-three-game/plugins/crashcat";
@@ -24,6 +38,10 @@ const CAMERA_SWAY_LERP = 10;
 const PITCH_MIN = -1.45;
 const PITCH_MAX = 1.45;
 const GRAVITY: [number, number, number] = [0, -9.81, 0];
+const MAX_PLAYER_STEP_DELTA = 1 / 60;
+const MAX_PLAYER_CATCH_UP_DELTA = 1 / 10;
+const SUPPORT_RAY_EXTRA_DISTANCE = 0.2;
+const SUPPORT_RAY_DIRECTION: [number, number, number] = [0, -1, 0];
 const PLAYER_ID = "player";
 const HAND_MODEL_URL = "/models/environment/picocad/hand1.glb";
 
@@ -41,6 +59,10 @@ const grabBodyPosition = new Vector3();
 const grabVelocity = new Vector3();
 const grabQuaternion = new Quaternion();
 const cameraWorldQuaternion = new Quaternion();
+const supportRayCollector = createClosestCastRayCollector();
+const supportRaySettings = createDefaultCastRaySettings();
+const supportRayOrigin: [number, number, number] = [0, 0, 0];
+const supportVelocity: [number, number, number] = [0, 0, 0];
 const playerBodyPosition: [number, number, number] = [0, 0, 0];
 const playerBodyQuaternion: [number, number, number, number] = [0, 0, 0, 1];
 const playerBodyVelocity: [number, number, number] = [0, 0, 0];
@@ -59,16 +81,11 @@ export type FirstPersonPlayerProps = {
     footstepMinSpeed?: number;
     cameraHeight?: number;
     spawnPosition?: [number, number, number];
+    children?: React.ReactNode;
 };
 
 export interface FirstPersonPlayerRef {
     getBody: () => RigidBody | null;
-}
-
-function moveToward(current: number, target: number, maxDelta: number) {
-    if (current < target) return Math.min(current + maxDelta, target);
-    if (current > target) return Math.max(current - maxDelta, target);
-    return current;
 }
 
 function getPrefabNodeId(object: Object3D | null | undefined) {
@@ -85,13 +102,52 @@ function getPrefabNodeId(object: Object3D | null | undefined) {
     return null;
 }
 
+function getSupportVelocity(world: World, queryFilter: Filter, character: ReturnType<typeof kcc.create>, grounded: boolean, halfHeightOfCylinder: number, radius: number) {
+    supportVelocity[0] = 0;
+    supportVelocity[1] = 0;
+    supportVelocity[2] = 0;
+
+    if (!grounded) {
+        return supportVelocity;
+    }
+
+    supportRayOrigin[0] = character.position[0];
+    supportRayOrigin[1] = character.position[1];
+    supportRayOrigin[2] = character.position[2];
+
+    supportRayCollector.reset();
+    castRay(
+        world,
+        supportRayCollector,
+        supportRaySettings,
+        supportRayOrigin,
+        SUPPORT_RAY_DIRECTION,
+        halfHeightOfCylinder + radius + SUPPORT_RAY_EXTRA_DISTANCE,
+        queryFilter,
+    );
+
+    if (supportRayCollector.hit.status !== CastRayStatus.COLLIDING) {
+        return supportVelocity;
+    }
+
+    const body = rigidBody.get(world, supportRayCollector.hit.bodyIdB);
+    if (!body || body.motionType !== MotionType.KINEMATIC) {
+        return supportVelocity;
+    }
+
+    supportVelocity[0] = body.motionProperties.linearVelocity[0];
+    supportVelocity[1] = body.motionProperties.linearVelocity[1];
+    supportVelocity[2] = body.motionProperties.linearVelocity[2];
+    return supportVelocity;
+}
+
 const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProps>(function FirstPersonPlayer({
     radius = 0.35,
     halfHeightOfCylinder = 0.45,
     maxSpeed = 7,
-    groundAccel = 18,
-    airAccel = 6,
-    friction = 10,
+    groundAccel: _groundAccel = 18,
+    airAccel: _airAccel = 6,
+    friction: _friction = 10,
     jumpSpeed = 6.5,
     footstepEventName = "player:footstep",
     footstepInterval = 0.3,
@@ -99,6 +155,7 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     footstepMinSpeed = 1.5,
     cameraHeight = 0.54,
     spawnPosition = [0, 1.3, 6],
+    children,
 }, ref) {
     const scene = useScene();
     const mode = scene.mode;
@@ -112,7 +169,6 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     const playerGroupRef = useRef<Group>(null);
     const cameraRigRef = useRef<Group>(null);
     const cameraSwayRef = useRef<Group>(null);
-    const planarVelocityRef = useRef(new Vector3());
     const footstepTimerRef = useRef(0);
     const characterRef = useRef<ReturnType<typeof kcc.create> | null>(null);
     const updateSettingsRef = useRef(kcc.createDefaultUpdateSettings());
@@ -132,7 +188,6 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     const resetPlayerState = useCallback(() => {
         characterRef.current = null;
         characterFilterRef.current = null;
-        planarVelocityRef.current.set(0, 0, 0);
         footstepTimerRef.current = 0;
         jumpQueuedRef.current = false;
         jumpPressedLastFrameRef.current = false;
@@ -248,11 +303,13 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
             return;
         }
 
+        const frameDelta = Math.min(delta, MAX_PLAYER_CATCH_UP_DELTA);
+
         if (Math.abs(lookHorizontal) > 0.01) {
-            cameraYawRef.current += lookHorizontal * JOYSTICK_SENSITIVITY * delta;
+            cameraYawRef.current += lookHorizontal * JOYSTICK_SENSITIVITY * frameDelta;
         }
         if (Math.abs(lookVertical) > 0.01) {
-            cameraPitchRef.current = MathUtils.clamp(cameraPitchRef.current - lookVertical * JOYSTICK_SENSITIVITY * delta, PITCH_MIN, PITCH_MAX);
+            cameraPitchRef.current = MathUtils.clamp(cameraPitchRef.current - lookVertical * JOYSTICK_SENSITIVITY * frameDelta, PITCH_MIN, PITCH_MAX);
         }
 
         const cameraRig = cameraRigRef.current;
@@ -266,7 +323,7 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         const cameraSway = cameraSwayRef.current;
         if (cameraSway) {
             const targetSway = -horizontalInput * CAMERA_SWAY_AMOUNT;
-            cameraSway.rotation.z = MathUtils.lerp(cameraSway.rotation.z, targetSway, Math.min(1, CAMERA_SWAY_LERP * delta));
+            cameraSway.rotation.z = MathUtils.lerp(cameraSway.rotation.z, targetSway, Math.min(1, CAMERA_SWAY_LERP * frameDelta));
         }
 
         state.camera.updateMatrixWorld();
@@ -324,44 +381,41 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
             .multiplyScalar(forwardInput)
             .addScaledVector(rightVector, rightInput);
 
-        const stepDelta = Math.min(delta, 1 / 30);
-        kcc.refreshContacts(world, character, characterFilter);
-        const grounded = kcc.isSupported(character);
-        const planarVelocity = planarVelocityRef.current;
-        const currentVelocityY = character.linearVelocity[1];
-
         const desiredPlanarSpeed = wishVector.lengthSq() > 0
             ? wishVector.normalize().multiplyScalar(maxSpeed)
             : wishVector.set(0, 0, 0);
 
-        const accel = grounded ? groundAccel : airAccel;
-        const maxDelta = accel * delta;
-        planarVelocity.set(
-            moveToward(planarVelocity.x, desiredPlanarSpeed.x, maxDelta),
-            0,
-            moveToward(planarVelocity.z, desiredPlanarSpeed.z, maxDelta),
-        );
+        planarVelocityVector.copy(desiredPlanarSpeed);
 
-        if (grounded && planarVelocity.lengthSq() > 0 && desiredPlanarSpeed.lengthSq() === 0) {
-            const damping = Math.max(0, 1 - friction * delta * 0.1);
-            planarVelocity.multiplyScalar(damping);
+        let grounded = false;
+        const stepCount = Math.max(1, Math.ceil(frameDelta / MAX_PLAYER_STEP_DELTA));
+        const stepDelta = frameDelta / stepCount;
+
+        for (let stepIndex = 0; stepIndex < stepCount; stepIndex += 1) {
+            kcc.refreshContacts(world, character, characterFilter);
+            grounded = kcc.isSupported(character);
+            const currentSupportVelocity = getSupportVelocity(world, characterFilter, character, grounded, halfHeightOfCylinder, radius);
+
+            const currentVelocityY = character.linearVelocity[1];
+            if (grounded && jumpQueuedRef.current) {
+                character.linearVelocity[1] = currentSupportVelocity[1] + jumpSpeed;
+                jumpQueuedRef.current = false;
+            } else {
+                character.linearVelocity[1] = grounded
+                    ? currentSupportVelocity[1]
+                    : currentVelocityY + GRAVITY[1] * stepDelta;
+            }
+
+            character.linearVelocity[0] = desiredPlanarSpeed.x + currentSupportVelocity[0];
+            character.linearVelocity[2] = desiredPlanarSpeed.z + currentSupportVelocity[2];
+
+            kcc.update(world, character, stepDelta, GRAVITY, updateSettingsRef.current, undefined, characterFilter);
         }
 
-        if (grounded && jumpQueuedRef.current) {
-            character.linearVelocity[1] = jumpSpeed;
-            jumpQueuedRef.current = false;
-        } else {
-            character.linearVelocity[1] = grounded
-                ? (currentVelocityY < 0 ? 0 : currentVelocityY)
-                : currentVelocityY + GRAVITY[1] * stepDelta;
-        }
+        kcc.refreshContacts(world, character, characterFilter);
+        grounded = kcc.isSupported(character);
 
-        character.linearVelocity[0] = planarVelocity.x;
-        character.linearVelocity[2] = planarVelocity.z;
-
-        kcc.update(world, character, stepDelta, GRAVITY, updateSettingsRef.current, undefined, characterFilter);
-
-        const speed = planarVelocity.length();
+        const speed = desiredPlanarSpeed.length();
         const moving = grounded && desiredPlanarSpeed.lengthSq() > 0 && speed > footstepMinSpeed;
 
         if (!moving) {
@@ -400,7 +454,7 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
             rigidBody.setLinearVelocity(world, playerBodyRef.current, playerBodyVelocity);
         }
 
-    });
+    }, -2);
 
     if (mode !== PrefabEditorMode.Play) {
         return null;
@@ -410,6 +464,7 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         <group ref={playerGroupRef} position={spawnPosition}>
             <group ref={cameraRigRef} position={[0, cameraHeight, 0]}>
                 <GrabArms />
+                {children}
                 <group ref={cameraSwayRef}>
                     <PerspectiveCamera makeDefault fov={90} near={0.1} far={1000} />
                 </group>
@@ -433,6 +488,7 @@ const GrabArms = (_props: GrabArmsProps) => {
     const runtime = useCrashcat();
 
     const grabbedNodeIdRef = useRef<string | null>(null);
+    const grabbedMotionQualityRef = useRef<MotionQuality | null>(null);
     const grabbedRotationOffsetRef = useRef(new Quaternion());
     const lastFirePressedRef = useRef(false);
     const lastAimPressedRef = useRef(false);
@@ -441,18 +497,37 @@ const GrabArms = (_props: GrabArmsProps) => {
 
     const resetGrabState = useCallback(() => {
         grabbedNodeIdRef.current = null;
+        grabbedMotionQualityRef.current = null;
         grabbedRotationOffsetRef.current.identity();
         lastFirePressedRef.current = false;
         lastAimPressedRef.current = false;
     }, []);
+
+    const restoreGrabbedMotionQuality = useCallback(() => {
+        const grabbedNodeId = grabbedNodeIdRef.current;
+        const originalMotionQuality = grabbedMotionQualityRef.current;
+
+        if (!grabbedNodeId || originalMotionQuality === null) {
+            grabbedMotionQualityRef.current = null;
+            return;
+        }
+
+        const body = runtime?.getBody(grabbedNodeId) ?? null;
+        if (body) {
+            body.motionProperties.motionQuality = originalMotionQuality;
+        }
+
+        grabbedMotionQualityRef.current = null;
+    }, [runtime]);
 
     useEffect(() => {
         if (mode === PrefabEditorMode.Play) {
             return;
         }
 
+        restoreGrabbedMotionQuality();
         resetGrabState();
-    }, [mode, resetGrabState]);
+    }, [mode, resetGrabState, restoreGrabbedMotionQuality]);
 
     const releaseGrabbed = useCallback((world: World, camera: Camera, launch = false) => {
         const grabbedNodeId = grabbedNodeIdRef.current;
@@ -470,8 +545,9 @@ const GrabArms = (_props: GrabArmsProps) => {
             rigidBody.setLinearVelocity(world, body, [grabVelocity.x, grabVelocity.y, grabVelocity.z]);
         }
 
+        restoreGrabbedMotionQuality();
         grabbedNodeIdRef.current = null;
-    }, [runtime]);
+    }, [restoreGrabbedMotionQuality, runtime]);
 
     const tryGrabTarget = useCallback((world: World, camera: Camera) => {
         raycaster.setFromCamera(centerScreen, camera);
@@ -493,6 +569,8 @@ const GrabArms = (_props: GrabArmsProps) => {
             }
 
             grabbedNodeIdRef.current = nodeId;
+            grabbedMotionQualityRef.current = body.motionProperties.motionQuality;
+            body.motionProperties.motionQuality = MotionQuality.LINEAR_CAST;
             grabQuaternion.set(body.quaternion[0], body.quaternion[1], body.quaternion[2], body.quaternion[3]);
             camera.getWorldQuaternion(cameraWorldQuaternion);
             grabbedRotationOffsetRef.current.copy(cameraWorldQuaternion).invert().multiply(grabQuaternion);
@@ -536,6 +614,7 @@ const GrabArms = (_props: GrabArmsProps) => {
 
         const grabbedBody = runtime?.getBody(grabbedNodeId);
         if (!grabbedBody || grabbedBody.motionType !== MotionType.DYNAMIC) {
+            restoreGrabbedMotionQuality();
             grabbedNodeIdRef.current = null;
             return;
         }
@@ -549,6 +628,7 @@ const GrabArms = (_props: GrabArmsProps) => {
 
         grabBodyPosition.set(grabbedBody.position[0], grabbedBody.position[1], grabbedBody.position[2]);
         if (grabBodyPosition.distanceToSquared(grabTargetPosition) > DEFAULT_GRAB_RANGE * DEFAULT_GRAB_RANGE * 2.25) {
+            restoreGrabbedMotionQuality();
             grabbedNodeIdRef.current = null;
             return;
         }
@@ -565,7 +645,7 @@ const GrabArms = (_props: GrabArmsProps) => {
         rigidBody.setAngularVelocity(world, grabbedBody, [0, 0, 0]);
         rigidBody.setQuaternion(world, grabbedBody, [grabQuaternion.x, grabQuaternion.y, grabQuaternion.z, grabQuaternion.w], true);
         rigidBody.setLinearVelocity(world, grabbedBody, [grabVelocity.x, grabVelocity.y, grabVelocity.z]);
-    });
+    }, -2);
 
     return (
         <primitive
