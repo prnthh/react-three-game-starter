@@ -165,7 +165,7 @@ const NPC = ({ playerRef }: { playerRef: React.RefObject<FirstPersonPlayerRef | 
     }, []);
 
     return <group ref={groupRef} position={[-2, 0, 0]}>
-        <Html distanceFactor={2} transform={true} occlude center position={[0, 2, 0]}>
+        <Html distanceFactor={8} center position={[0, 2, 0]}>
             <div style={{
                 minWidth: 160,
                 border: "1px solid rgba(255,255,255,0.25)",

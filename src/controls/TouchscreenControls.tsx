@@ -48,22 +48,24 @@ export const Joystick: React.FC<JoystickProps> = ({
     onMove
 }) => {
     const containerRef = useRef<HTMLButtonElement>(null);
-    const [knob, setKnob] = useState({ x: 0, y: 0 });
+    const knobRef = useRef<HTMLDivElement>(null);
     const [isActive, setIsActive] = useState(false);
     const dragging = useRef(false);
     const activeTouchId = useRef<number | null>(null);
     const setAxis = useInputStore(state => state.setAxis);
     const setButton = useInputStore(state => state.setButton);
 
-    // Update joystick values in store
-    useEffect(() => {
-        const normalizedX = clamp(knob.x / (radius - knobRadius / 2), -1, 1);
-        const normalizedY = clamp(knob.y / (radius - knobRadius / 2), -1, 1);
+    const setKnobPosition = (pos: { x: number; y: number }) => {
+        if (knobRef.current) {
+            knobRef.current.style.transform = `translate3d(${pos.x}px, ${pos.y}px, 0)`;
+        }
+
+        const normalizedX = clamp(pos.x / (radius - knobRadius / 2), -1, 1);
+        const normalizedY = clamp(pos.y / (radius - knobRadius / 2), -1, 1);
 
         setAxis(horizontalAxis, normalizedX);
         setAxis(verticalAxis, -normalizedY); // Invert Y so up is positive
 
-        // Only set sprint for movement joystick (not look joystick)
         if (horizontalAxis === 'horizontal' && verticalAxis === 'vertical') {
             const magnitude = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
             const shouldSprint = magnitude > RUN_THRESHOLD;
@@ -73,14 +75,24 @@ export const Joystick: React.FC<JoystickProps> = ({
         if (onMove) {
             onMove({ x: normalizedX, y: -normalizedY });
         }
-    }, [knob.x, knob.y, horizontalAxis, verticalAxis, setAxis, setButton, onMove]);
+    };
+
+    useEffect(() => {
+        return () => {
+            setAxis(horizontalAxis, 0);
+            setAxis(verticalAxis, 0);
+            if (horizontalAxis === 'horizontal' && verticalAxis === 'vertical') {
+                setButton('sprint', false);
+            }
+        };
+    }, [horizontalAxis, verticalAxis, setAxis, setButton]);
 
     // Helper to update knob and call onMove
     const updateKnobFromCoords = (clientX: number, clientY: number) => {
         const rect = containerRef.current?.getBoundingClientRect();
         if (!rect) return;
         const pos = getRelativePosition(clientX, clientY, rect);
-        setKnob(pos);
+        setKnobPosition(pos);
     };
 
     // Only start joystick drag if touch starts on joystick area and not already dragging
@@ -144,7 +156,7 @@ export const Joystick: React.FC<JoystickProps> = ({
         setIsActive(false);
         dragging.current = false;
         activeTouchId.current = null;
-        setKnob({ x: 0, y: 0 });
+        setKnobPosition({ x: 0, y: 0 });
     };
 
     return (
@@ -188,10 +200,11 @@ export const Joystick: React.FC<JoystickProps> = ({
             }}
         >
             <div
+                ref={knobRef}
                 style={{
                     position: 'absolute',
-                    left: radius + knob.x - knobRadius / 2,
-                    top: radius + knob.y - knobRadius / 2,
+                    left: radius - knobRadius / 2,
+                    top: radius - knobRadius / 2,
                     width: knobRadius,
                     height: knobRadius,
                     background: 'rgba(255,255,255,0.7)',
@@ -200,6 +213,8 @@ export const Joystick: React.FC<JoystickProps> = ({
                     boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
                     touchAction: 'none',
                     pointerEvents: 'none',
+                    transform: 'translate3d(0, 0, 0)',
+                    willChange: 'transform',
                 }}
             />
         </button>
