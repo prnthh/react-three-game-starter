@@ -23,6 +23,7 @@ const DEFAULT_LOOK_AT_TWEEN_SPEED = 7;
 const DEFAULT_LOOK_AT_REST_TWEEN_SPEED = 5;
 const LOOK_AT_TARGET_HEIGHT_OFFSET = 0.5;
 const LOOK_AT_SNAP_EPSILON = 0.0001;
+const LOOK_AT_LOCAL_X_AXIS = new Vector3(1, 0, 0);
 
 type PlayerTarget = Object3D<Object3DEventMap> | {
     getBody: () => {
@@ -37,6 +38,7 @@ type AnimationMixerProps = {
     lookTarget?: RefObject<PlayerTarget | null>;
     lookAtTweenSpeed?: number;
     lookAtRestTweenSpeed?: number;
+    neckLookPitchOffset?: number;
     neckBoneName?: string;
     onActions?: (actions: Record<string, AnimationAction>) => void;
 };
@@ -257,12 +259,18 @@ function useLookAtTarget(
     neckBoneName: string,
     tweenSpeed: number,
     restTweenSpeed: number,
+    neckLookPitchOffset: number,
 ) {
     const neckBoneRef = useRef<Bone | null>(null);
     const targetPositionRef = useRef(new Vector3());
     const previousQuaternionRef = useRef(new Quaternion());
     const desiredQuaternionRef = useRef(new Quaternion());
     const restQuaternionRef = useRef(new Quaternion());
+    const lookOffsetQuaternionRef = useRef(new Quaternion());
+
+    useEffect(() => {
+        lookOffsetQuaternionRef.current.setFromAxisAngle(LOOK_AT_LOCAL_X_AXIS, neckLookPitchOffset);
+    }, [neckLookPitchOffset]);
 
     useEffect(() => {
         neckBoneRef.current = null;
@@ -283,6 +291,7 @@ function useLookAtTarget(
 
         const previousQuaternion = previousQuaternionRef.current.copy(neck.quaternion);
         const desiredQuaternion = desiredQuaternionRef.current;
+        const lookOffsetQuaternion = lookOffsetQuaternionRef.current;
         const target = lookTarget?.current;
         let speed = restTweenSpeed;
 
@@ -292,14 +301,14 @@ function useLookAtTarget(
             if (targetPosition) {
                 targetPosition.y += LOOK_AT_TARGET_HEIGHT_OFFSET;
                 neck.lookAt(targetPosition);
-                desiredQuaternion.copy(neck.quaternion);
+                desiredQuaternion.copy(neck.quaternion).multiply(lookOffsetQuaternion);
                 neck.quaternion.copy(previousQuaternion);
                 speed = tweenSpeed;
             } else {
-                desiredQuaternion.copy(restQuaternionRef.current);
+                desiredQuaternion.copy(restQuaternionRef.current).multiply(lookOffsetQuaternion);
             }
         } else {
-            desiredQuaternion.copy(restQuaternionRef.current);
+            desiredQuaternion.copy(restQuaternionRef.current).multiply(lookOffsetQuaternion);
         }
 
         const alpha = 1 - Math.exp(-Math.max(0, speed) * delta);
@@ -341,6 +350,7 @@ export default function AnimationMixer({
     lookTarget,
     lookAtTweenSpeed = DEFAULT_LOOK_AT_TWEEN_SPEED,
     lookAtRestTweenSpeed = DEFAULT_LOOK_AT_REST_TWEEN_SPEED,
+    neckLookPitchOffset = 0,
     neckBoneName = "mixamorigNeck",
     onActions,
 }: AnimationMixerProps) {
@@ -360,7 +370,7 @@ export default function AnimationMixer({
         mixer?.update(delta);
     });
 
-    useLookAtTarget(model, lookTarget, neckBoneName, lookAtTweenSpeed, lookAtRestTweenSpeed);
+    useLookAtTarget(model, lookTarget, neckBoneName, lookAtTweenSpeed, lookAtRestTweenSpeed, neckLookPitchOffset);
 
     return null;
 }

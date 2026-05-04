@@ -5,7 +5,8 @@ import { useFrame } from "@react-three/fiber";
 import { cylinder, MotionType, rigidBody, type RigidBody } from "crashcat";
 import { GameCanvas, PrefabRoot, registerComponent, useGameEvent, useScene, type ContactEventPayload, type Prefab } from "react-three-game";
 import { CrashcatPhysicsComponent, CrashcatRuntime, useCrashcat } from "react-three-game/plugins/crashcat";
-import { CatmullRomCurve3, Group, Quaternion, Vector3 } from "three";
+import { CatmullRomCurve3, Quaternion, Vector3 } from "three";
+import type { Group } from "three";
 import Controls from "../controls/ControlsProvider";
 
 import ElevatorMover from "./components/ElevatorMover";
@@ -75,7 +76,7 @@ const TrainScene = () => {
     const playerRef = useRef<FirstPersonPlayerRef>(null);
 
     return <>
-        <FirstPersonPlayer ref={playerRef} />
+        <FirstPersonPlayer ref={playerRef} avatarModel={ONIMILIO_MODEL} />
 
         <NPC playerRef={playerRef} />
 

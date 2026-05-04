@@ -1329,7 +1329,8 @@
                   "intensity": 100,
                   "penumbra": 0.7,
                   "distance": 70,
-                  "angle": 1.15
+                  "angle": 1.15,
+                  "castShadow": true
                 }
               }
             },
@@ -1365,7 +1366,8 @@
                   "intensity": 100,
                   "penumbra": 0.7,
                   "distance": 70,
-                  "angle": 1.15
+                  "angle": 1.15,
+                  "castShadow": true
                 }
               }
             },

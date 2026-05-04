@@ -17,13 +17,15 @@ import {
     type RigidBody,
     type World,
 } from "crashcat";
-import { forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { gameEvents, PrefabEditorMode, soundManager, useScene } from "react-three-game";
 import { useCrashcat } from "react-three-game/plugins/crashcat";
 import { useControls } from "../controls/ControlsProvider";
 import useInputStore from "../controls/InputStore";
 import { MathUtils, Quaternion, Raycaster, Vector2, Vector3 } from "three";
 import type { Camera, Group, Object3D } from "three";
+import AnimationMixer from "./components/AnimationMixer";
+import SkinnedMesh, { type SkinnedMeshRef } from "./components/SkinnedMesh";
 
 const FOOTSTEP_CLIPS = ["/sound/hit.mp3", "/sound/hit2.mp3"] as const;
 const DEFAULT_GRAB_DISTANCE = 2.75;
@@ -44,6 +46,18 @@ const SUPPORT_RAY_EXTRA_DISTANCE = 0.2;
 const SUPPORT_RAY_DIRECTION: [number, number, number] = [0, -1, 0];
 const PLAYER_ID = "player";
 const HAND_MODEL_URL = "/models/environment/picocad/hand1.glb";
+const PLAYER_MOVE_INPUT_DEADZONE = 0.12;
+const PLAYER_RUN_THRESHOLD = 0.6;
+
+const PLAYER_ANIMATION_FALLBACKS: Record<string, string[]> = {
+    idle: ["idle"],
+    walk: ["walk", "run"],
+    walkBack: ["walkBack", "walk"],
+    walkLeft: ["walkLeft", "walk"],
+    walkRight: ["walkRight", "walkLeft", "walk"],
+    run: ["run", "walk"],
+    runBack: ["runBack", "walkBack", "run", "walk"],
+};
 
 const forwardVector = new Vector3();
 const rightVector = new Vector3();
@@ -88,6 +102,7 @@ export type FirstPersonPlayerProps = {
     footstepMinSpeed?: number;
     cameraHeight?: number;
     spawnPosition?: [number, number, number];
+    avatarModel?: string;
     children?: React.ReactNode;
 };
 
@@ -154,6 +169,35 @@ function readBodyVelocity(body: RigidBody | null) {
     return supportVelocity;
 }
 
+function resolvePlayerAnimation(
+    availableAnimations: Set<string>,
+    horizontalInput: number,
+    verticalInput: number,
+    grounded: boolean,
+    speed: number,
+) {
+    const inputMagnitude = Math.hypot(horizontalInput, verticalInput);
+
+    if (!grounded || inputMagnitude < PLAYER_MOVE_INPUT_DEADZONE || speed < 0.1) {
+        return PLAYER_ANIMATION_FALLBACKS.idle.find((name) => availableAnimations.has(name));
+    }
+
+    const isRunning = inputMagnitude >= PLAYER_RUN_THRESHOLD;
+    const prefersStrafe = Math.abs(horizontalInput) > Math.abs(verticalInput);
+
+    let requestedAnimation = isRunning ? "run" : "walk";
+
+    if (prefersStrafe) {
+        requestedAnimation = horizontalInput > 0 ? "walkRight" : "walkLeft";
+    } else if (verticalInput < -PLAYER_MOVE_INPUT_DEADZONE) {
+        requestedAnimation = isRunning ? "runBack" : "walkBack";
+    }
+
+    return PLAYER_ANIMATION_FALLBACKS[requestedAnimation]?.find((name) => availableAnimations.has(name))
+        ?? PLAYER_ANIMATION_FALLBACKS.walk.find((name) => availableAnimations.has(name))
+        ?? PLAYER_ANIMATION_FALLBACKS.idle.find((name) => availableAnimations.has(name));
+}
+
 const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProps>(function FirstPersonPlayer({
     radius = 0.35,
     halfHeightOfCylinder = 0.45,
@@ -166,8 +210,9 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     footstepInterval = 0.3,
     footstepRandomDelay = 0.15,
     footstepMinSpeed = 1.5,
-    cameraHeight = 0.54,
+    cameraHeight = 0.55,
     spawnPosition = [0, 1.3, 6],
+    avatarModel,
     children,
 }, ref) {
     const scene = useScene();
@@ -182,6 +227,9 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     const playerGroupRef = useRef<Group>(null);
     const cameraRigRef = useRef<Group>(null);
     const cameraSwayRef = useRef<Group>(null);
+    const avatarYawRef = useRef<Group>(null);
+    const avatarRef = useRef<SkinnedMeshRef>(null);
+    const avatarAnimationRef = useRef<string | undefined>(undefined);
     const planarVelocityRef = useRef(new Vector3());
     const footstepTimerRef = useRef(0);
     const characterRef = useRef<ReturnType<typeof kcc.create> | null>(null);
@@ -195,6 +243,8 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
     const lastSupportBodyIdRef = useRef<number | null>(null);
     const lastSupportQuaternionRef = useRef(new Quaternion());
     const nextFootstepAudioRef = useRef(0);
+    const [avatarAnimation, setAvatarAnimation] = useState<string | undefined>(undefined);
+    const [availableAvatarAnimations, setAvailableAvatarAnimations] = useState<Set<string>>(new Set());
 
     useImperativeHandle(ref, () => ({
         getBody: () => playerBodyRef.current,
@@ -211,6 +261,8 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         cameraPitchRef.current = 0;
         lastSupportBodyIdRef.current = null;
         lastSupportQuaternionRef.current.identity();
+        avatarAnimationRef.current = undefined;
+        setAvatarAnimation(undefined);
     }, []);
 
     useEffect(() => {
@@ -327,6 +379,11 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
             cameraRig.rotation.z = 0;
         }
 
+        const avatarYaw = avatarYawRef.current;
+        if (avatarYaw) {
+            avatarYaw.rotation.set(0, cameraYawRef.current + Math.PI, 0);
+        }
+
         const cameraSway = cameraSwayRef.current;
         if (cameraSway) {
             const targetSway = -horizontalInput * CAMERA_SWAY_AMOUNT;
@@ -367,7 +424,13 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
         const character = characterRef.current;
         const characterFilter = characterFilterRef.current;
         filter.copy(characterFilter, baseQueryFilter);
-        characterFilter.bodyFilter = playerBodyRef.current ? (body) => body !== playerBodyRef.current : undefined;
+        characterFilter.bodyFilter = (body) => {
+            if (body.sensor) {
+                return false;
+            }
+
+            return body !== playerBodyRef.current;
+        };
 
         const forwardInput = verticalInput;
         const rightInput = horizontalInput;
@@ -480,6 +543,18 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
 
         const speed = planarVelocityVector.length();
         const moving = grounded && desiredPlanarSpeed.lengthSq() > 0 && speed > footstepMinSpeed;
+        const nextAvatarAnimation = resolvePlayerAnimation(
+            availableAvatarAnimations,
+            horizontalInput,
+            verticalInput,
+            grounded,
+            speed,
+        );
+
+        if (avatarAnimationRef.current !== nextAvatarAnimation) {
+            avatarAnimationRef.current = nextAvatarAnimation;
+            setAvatarAnimation(nextAvatarAnimation);
+        }
 
         if (!moving) {
             if (footstepTimerRef.current !== 0) {
@@ -532,10 +607,31 @@ const FirstPersonPlayer = forwardRef<FirstPersonPlayerRef, FirstPersonPlayerProp
 
     return (
         <group ref={playerGroupRef} position={spawnPosition}>
+            {avatarModel ? (
+                <group ref={avatarYawRef} position={[0, -(halfHeightOfCylinder + radius), 0]}>
+                    <SkinnedMesh ref={avatarRef} model={avatarModel} />
+                    <AnimationMixer
+                        skinnedMeshRef={avatarRef}
+                        animation={avatarAnimation}
+                        neckLookPitchOffset={-Math.PI / 2}
+                        onActions={(actions) => {
+                            setAvailableAvatarAnimations((current) => {
+                                const next = new Set(Object.keys(actions));
+
+                                if (current.size === next.size && [...current].every((name) => next.has(name))) {
+                                    return current;
+                                }
+
+                                return next;
+                            });
+                        }}
+                    />
+                </group>
+            ) : null}
             <group ref={cameraRigRef} position={[0, cameraHeight, 0]}>
                 <GrabArms />
                 {children}
-                <group ref={cameraSwayRef}>
+                <group ref={cameraSwayRef} position={[0, 0.15, 0]}>
                     <PerspectiveCamera makeDefault fov={90} near={0.1} far={1000} />
                 </group>
             </group>
@@ -550,8 +646,6 @@ export default FirstPersonPlayer;
 type GrabArmsProps = Record<string, never>;
 
 const GrabArms = (_props: GrabArmsProps) => {
-    const { scene: handScene } = useGLTF(HAND_MODEL_URL);
-    const handModel = useMemo(() => handScene.clone(), [handScene]);
     const scene = useThree((state) => state.scene);
     const sceneApi = useScene();
     const mode = sceneApi.mode;
@@ -717,14 +811,7 @@ const GrabArms = (_props: GrabArmsProps) => {
         rigidBody.setLinearVelocity(world, grabbedBody, [grabVelocity.x, grabVelocity.y, grabVelocity.z]);
     }, -2);
 
-    return (
-        <primitive
-            object={handModel}
-            position={[0.2, -0.15, -0.28]}
-            rotation={[0, -Math.PI / 1.8, 0.2]}
-            scale={0.025}
-        />
-    );
+    return null;
 }
 
 useGLTF.preload(HAND_MODEL_URL);
