@@ -11,6 +11,7 @@ import ElevatorMover from "../components/ElevatorMover";
 import FirstPersonPlayer, { type FirstPersonPlayerRef } from "../FirstPersonPlayer";
 
 import initialWorld from "../../levels/train.json";
+import { BASE_PATH } from "../../shared/basePath";
 
 registerComponent(CrashcatPhysicsComponent);
 registerComponent(ElevatorMover);
@@ -36,7 +37,7 @@ export default function Home() {
     return (
         <main style={{ width: "100%", height: "100%", position: "relative", backgroundColor: "#000", overflow: "hidden" }}>
             <Controls>
-                <PrefabEditor ref={editorRef} initialPrefab={initialWorld as Prefab}>
+                <PrefabEditor ref={editorRef} initialPrefab={initialWorld as Prefab} basePath={BASE_PATH}>
                     <ControlModeSync />
                     <CrashcatRuntime>
                         <FirstPersonPlayer ref={playerRef} />

@@ -1,6 +1,7 @@
 import { GameCanvas, PrefabRoot } from "react-three-game";
 import train from "./levels/train.json";
 import MyRenderPipeline from "./shared/PostProcessingEffects";
+import { BASE_PATH } from "./shared/basePath";
 
 export default function MainMenu({ setGameState }: { setGameState: React.Dispatch<React.SetStateAction<'menu' | 'singleplayer' | 'editor'>> }) {
     return (
@@ -11,7 +12,7 @@ export default function MainMenu({ setGameState }: { setGameState: React.Dispatc
                 <button type="button" onClick={() => setGameState('editor')}>Prefab Editor</button>
             </div>
             <GameCanvas camera={{ position: [0, 2, 6] }}>
-                <PrefabRoot data={train}>
+                <PrefabRoot data={train} basePath={BASE_PATH}>
                     <MyRenderPipeline />
                 </PrefabRoot>
             </GameCanvas>

@@ -26,8 +26,9 @@ import { MathUtils, Quaternion, Raycaster, Vector2, Vector3 } from "three";
 import type { Camera, Group, Object3D } from "three";
 import AnimationMixer from "./components/AnimationMixer";
 import SkinnedMesh, { type SkinnedMeshRef } from "./components/SkinnedMesh";
+import { assetPath } from "../shared/basePath";
 
-const FOOTSTEP_CLIPS = ["/sound/hit.mp3", "/sound/hit2.mp3"] as const;
+const FOOTSTEP_CLIPS = [assetPath("/sound/hit.mp3"), assetPath("/sound/hit2.mp3")] as const;
 const DEFAULT_GRAB_DISTANCE = 2.75;
 const DEFAULT_GRAB_RANGE = 8;
 const DEFAULT_GRAB_STRENGTH = 18;
@@ -45,7 +46,7 @@ const MAX_PLAYER_CATCH_UP_DELTA = 1 / 10;
 const SUPPORT_RAY_EXTRA_DISTANCE = 0.2;
 const SUPPORT_RAY_DIRECTION: [number, number, number] = [0, -1, 0];
 const PLAYER_ID = "player";
-const HAND_MODEL_URL = "/models/environment/picocad/hand1.glb";
+const HAND_MODEL_URL = assetPath("/models/environment/picocad/hand1.glb");
 const PLAYER_MOVE_INPUT_DEADZONE = 0.12;
 const PLAYER_RUN_THRESHOLD = 0.6;
 

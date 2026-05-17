@@ -17,6 +17,7 @@ import train from "../levels/train.json";
 import SkinnedMesh, { type SkinnedMeshRef } from "./components/SkinnedMesh";
 import AnimationMixer from "./components/AnimationMixer";
 import { Html } from "@react-three/drei";
+import { BASE_PATH, assetPath } from "../shared/basePath";
 
 registerComponent(CrashcatPhysicsComponent);
 registerComponent(ElevatorMover);
@@ -58,7 +59,7 @@ export default function Home() {
         <main style={{ width: "100%", height: "100%", position: "relative", backgroundColor: "#000", overflow: "hidden" }}>
             <Controls>
                 <GameCanvas>
-                    <PrefabRoot data={train as Prefab}>
+                    <PrefabRoot data={train as Prefab} basePath={BASE_PATH}>
                         <CrashcatRuntime>
                             <TrainScene />
                         </CrashcatRuntime>
@@ -70,7 +71,7 @@ export default function Home() {
     );
 }
 
-const ONIMILIO_MODEL = "/models/human/onimilio.glb";
+const ONIMILIO_MODEL = assetPath("/models/human/onimilio.glb");
 
 const TrainScene = () => {
     const playerRef = useRef<FirstPersonPlayerRef>(null);
