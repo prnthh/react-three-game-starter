@@ -1,0 +1,3 @@
+[submodule "react-three-game"]
+	path = react-three-game
+	url = https://github.com/prnthh/react-three-game.git
