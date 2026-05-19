@@ -6,5 +6,8 @@ const defaultBasePath = process.env.NODE_ENV === 'production' ? '/react-three-ga
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    preserveSymlinks: true,
+  },
   base: process.env.VITE_BASE_PATH ?? defaultBasePath,
 })
