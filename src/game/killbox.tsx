@@ -13,7 +13,7 @@ import ElevatorMover from "./components/ElevatorMover";
 
 import FirstPersonPlayer, { type FirstPersonPlayerRef } from "./FirstPersonPlayer";
 
-import train from "../levels/train.json";
+import killbox from "../levels/lobby.json";
 import SkinnedMesh, { type SkinnedMeshRef } from "./components/SkinnedMesh";
 import AnimationMixer from "./components/AnimationMixer";
 import { Html } from "@react-three/drei";
@@ -54,12 +54,12 @@ function useTrainCurve() {
     return useMemo(() => new CatmullRomCurve3(curvePoints), [curvePoints]);
 }
 
-export default function Home() {
+export default function Singleplayer() {
     return (
         <main style={{ width: "100%", height: "100%", position: "relative", backgroundColor: "#000", overflow: "hidden" }}>
             <Controls>
                 <GameCanvas>
-                    <PrefabRoot data={train as Prefab} basePath={BASE_PATH}>
+                    <PrefabRoot data={killbox as Prefab} basePath={BASE_PATH}>
                         <CrashcatRuntime>
                             <TrainScene />
                         </CrashcatRuntime>

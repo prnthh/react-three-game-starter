@@ -1521,6 +1521,304 @@
             "children": []
           }
         ]
+      },
+      {
+        "id": "01225cf3-c2ed-4664-8041-a28612cd3ab0",
+        "name": "bowling alley",
+        "components": {
+          "transform": {
+            "type": "Transform",
+            "properties": {
+              "position": [
+                0,
+                6.127551835024793,
+                21
+              ],
+              "rotation": [
+                0,
+                0,
+                0
+              ],
+              "scale": [
+                1,
+                1,
+                1
+              ]
+            }
+          }
+        },
+        "children": [
+          {
+            "id": "bcb05da1-b9eb-4c65-aaa5-a0c6d6659b3d",
+            "name": "lane",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    0,
+                    -10.5
+                  ],
+                  "rotation": [
+                    -1.5707963267948963,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "plane",
+                  "args": [
+                    5,
+                    25
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/horror/Metal/Horror_Metal_13-256x256.png",
+                  "repeat": true,
+                  "repeatCount": [
+                    1.5,
+                    3.6
+                  ]
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "65e5a524-65e3-43c8-a54a-44e5e77c6210",
+            "name": "New Node",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    3.372448164975207,
+                    0
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    5.2,
+                    2.5,
+                    1
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#a8a8a8",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "dd6041ee-d5c5-4926-b0a8-70098dbbd265",
+            "name": "New Node Copy",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    0,
+                    1.3724481649752072,
+                    2.5
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "box",
+                  "args": [
+                    5.2,
+                    2.5,
+                    1
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#a8a8a8",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1
+                }
+              }
+            },
+            "children": []
+          },
+          {
+            "id": "25fffc31-ec57-4edd-83e4-6c59283e32da",
+            "name": "New Node",
+            "components": {
+              "transform": {
+                "type": "Transform",
+                "properties": {
+                  "position": [
+                    4.5,
+                    1.3724481649752072,
+                    -17
+                  ],
+                  "rotation": [
+                    0,
+                    0,
+                    0
+                  ],
+                  "scale": [
+                    1,
+                    1,
+                    1
+                  ]
+                }
+              },
+              "geometry": {
+                "type": "Geometry",
+                "properties": {
+                  "geometryType": "sphere",
+                  "args": [
+                    0.4,
+                    32,
+                    16
+                  ],
+                  "emitClickEvent": false,
+                  "clickEventName": ""
+                }
+              },
+              "material": {
+                "type": "Material",
+                "properties": {
+                  "attach": "material",
+                  "materialType": "standard",
+                  "color": "#ffffff",
+                  "toneMapped": true,
+                  "wireframe": false,
+                  "transparent": false,
+                  "opacity": 1,
+                  "sizeAttenuation": true,
+                  "offset": [
+                    0,
+                    0
+                  ],
+                  "animateOffset": false,
+                  "offsetSpeed": [
+                    0,
+                    0
+                  ],
+                  "metalness": 0,
+                  "roughness": 1,
+                  "texture": "/textures/horror/Misc/Horror_Misc_12-256x256.png"
+                }
+              },
+              "crashcatphysics": {
+                "type": "CrashcatPhysics",
+                "properties": {
+                  "type": "dynamic",
+                  "colliders": "ball",
+                  "sensor": false
+                }
+              }
+            },
+            "children": []
+          }
+        ]
       }
     ]
   }
